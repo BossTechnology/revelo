@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Relevo · Board BOb</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif}
+a{color:inherit}a:hover{opacity:.85}
+button,input,select,textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="--bg: {{t.bg}}; --panel: {{t.panel}}; --side: {{t.side}}; --col: {{t.col}}; --card: {{t.card}}; --line: {{t.line}}; --fg: {{t.fg}}; --muted: {{t.muted}}; --accent: {{t.accent}}; --on-accent: {{t.onAccent}}; --chip: {{t.chip}}; --ok: {{t.ok}}; --bad: {{t.bad}}; --bad-bg: {{t.badBg}}; --okbg: {{t.okBg}}; min-height: 100vh; background: var(--bg); color: var(--fg); display: flex; flex-wrap: wrap; font-size: 14px">
+
+<nav aria-label="Navegación principal" style="flex: 1 0 220px; max-width: 100%; background: var(--side); border-right: 1px solid var(--line); padding: 18px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--accent)"><path d="M4 8h12l-3-3"/><path d="M20 16H8l3 3"/></svg>
+<span style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em">Relevo</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<a href="Proyectos.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg); min-height: 24px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Proyectos</a>
+<a href="MiTurno.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg); min-height: 24px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5 5h14l1 8v6H4v-6z"/></svg>Mi turno<span style="margin-left: auto; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px">3</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0 8px 6px">Proyectos</div>
+<a href="Main.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg); background: var(--chip); font-weight: 600">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: #7C3AED"></span>BOb<span style="margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 500">9</span></a>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: #0E7490"></span>BzzzBX<span style="margin-left: auto; font-size: 12px; color: var(--muted)">9</span></a>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: #B45309"></span>Momentum<span style="margin-left: auto; font-size: 12px; color: var(--muted)">10</span></a>
+<a href="Proyectos.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--muted)">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nuevo proyecto</a>
+</div>
+<div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 6px 0; border-top: 1px solid var(--line)">
+<span style="width: 30px; height: 30px; border-radius: 50%; background: {{henryDot}}; color: {{avFg}}; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px">H</span>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-weight: 600">Henry</span><span style="font-size: 12px; color: var(--muted)">Desarrollo</span></div>
+<button type="button" onClick="{{toggleDark}}" aria-label="Cambiar modo claro u oscuro" style="margin-left: auto; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+</button>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel)">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="font-size: 12px; color: var(--muted)"><a href="Proyectos.dc.html" style="color: var(--muted); text-decoration: none">Proyectos</a> / BOb</div>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<h1 style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">BOb</h1>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted); background: var(--chip); padding: 3px 8px; border-radius: 6px">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>BossTechnology/Bob-New</span>
+<span style="font-size: 12px; color: var(--muted)">Última actividad: CI verde en PR #23 · hace 2 h</span>
+</div>
+</div>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<label style="display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; height: 38px; background: var(--bg); color: var(--muted)">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar</span>
+<input type="search" placeholder="Buscar por ID o texto" style="border: 0; outline: 0; background: transparent; color: var(--fg); font-size: 14px; width: 190px">
+</label>
+<button type="button" style="height: 38px; padding: 0 14px; border-radius: 8px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nueva tarea</button>
+</div>
+</header>
+
+<div role="group" aria-label="Filtrar por turno" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 24px; border-bottom: 1px solid var(--line)">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+<button type="button" onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}; font-size: 13px; font-weight: {{f.weight}}; display: inline-flex; align-items: center; gap: 8px; cursor: pointer">
+<sc-if value="{{f.hasDot}}" hint-placeholder-val="{{false}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{f.dot}}"></span></sc-if>{{f.label}}<span style="font-size: 12px; opacity: .8">{{f.count}}</span></button>
+</sc-for>
+<span style="margin-left: auto; font-size: 12px; color: var(--muted); display: inline-flex; gap: 14px; flex-wrap: wrap">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{ty.handoff}}"></span>Handoff</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{ty.pregunta}}"></span>Pregunta</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{ty.decision}}"></span>Decisión</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{ty.externo}}"></span>Pendiente externo</span>
+</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0; flex: 1">
+
+<section aria-label="Tablero" style="flex: 999 1 620px; min-width: 0; padding: 18px 20px 28px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start">
+<sc-for list="{{cols}}" as="col" hint-placeholder-count="3">
+<div style="background: var(--col); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<div style="display: flex; align-items: center; gap: 8px; padding: 2px 4px">
+<span style="width: 10px; height: 10px; border-radius: 50%; border: 2px solid {{col.ring}}; background: {{col.fill}}"></span>
+<h2 style="margin: 0; font-size: 13px; font-weight: 600">{{col.name}}</h2>
+<span style="font-size: 12px; color: var(--muted)">{{col.count}}</span>
+</div>
+<sc-if value="{{col.empty}}" hint-placeholder-val="{{false}}">
+<div style="border: 1px dashed var(--line); border-radius: 8px; padding: 18px 12px; text-align: center; color: var(--muted); font-size: 13px">Nada con este filtro</div>
+</sc-if>
+<sc-for list="{{col.cards}}" as="c" hint-placeholder-count="3">
+<article style="background: var(--card); border: 1px solid {{c.border}}; box-shadow: {{c.shadow}}; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: {{c.turnBg}}; color: {{c.turnFg}}; font-size: 12px; font-weight: 600">
+<span style="width: 20px; height: 20px; flex: 0 0 20px; border-radius: 50%; background: {{c.turnDot}}; color: {{c.avFg}}; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">
+<sc-if value="{{c.closed}}" hint-placeholder-val="{{false}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></sc-if>
+<sc-if value="{{c.open}}" hint-placeholder-val="{{true}}">{{c.ini}}</sc-if>
+</span>
+<span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{c.turnText}}</span>
+<sc-if value="{{c.mine}}" hint-placeholder-val="{{false}}"><span style="margin-left: auto; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em">Te toca</span></sc-if>
+</div>
+<div style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: var(--muted); font-weight: 500">{{c.id}}</span>
+<span style="display: inline-flex; align-items: center; gap: 5px; color: {{c.typeColor}}; font-weight: 600"><span style="width: 7px; height: 7px; border-radius: 2px; background: {{c.typeColor}}"></span>{{c.typeLabel}}</span>
+</div>
+<div style="font-size: 14px; line-height: 1.38; font-weight: 500">{{c.title}}</div>
+<sc-if value="{{c.hasDeadline}}" hint-placeholder-val="{{false}}">
+<div style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--bad); background: var(--bad-bg); padding: 3px 8px; border-radius: 5px">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{c.deadline}}</div>
+</sc-if>
+<sc-if value="{{c.hasGit}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px">
+<span style="display: inline-flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', ui-monospace, monospace; min-width: 0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="7" r="2"/><path d="M6 7v10"/><path d="M18 9c0 5-6 4-12 8"/></svg><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{c.git.branch}}</span></span>
+<span style="display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<span style="display: inline-flex; align-items: center; gap: 5px; color: {{c.prColor}}; font-weight: 500"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8v8"/><path d="M18 16V9a3 3 0 0 0-3-3h-4"/></svg>{{c.git.pr}}</span>
+<span style="display: inline-flex; align-items: center; gap: 5px; color: var(--ok); font-weight: 600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>{{c.git.ci}}</span>
+</span>
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted)">
+<span style="display: inline-flex; align-items: center; gap: 4px" aria-label="Adjuntos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>{{c.att}}</span>
+<span style="display: inline-flex; align-items: center; gap: 4px" aria-label="Respuestas"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>{{c.resp}}</span>
+<span style="margin-left: auto">{{c.age}}</span>
+</div>
+</div>
+</article>
+</sc-for>
+</div>
+</sc-for>
+</section>
+
+<aside aria-label="Detalle de la tarea BOB-14" style="flex: 1 1 420px; max-width: 100%; min-width: 0; box-sizing: border-box; background: var(--panel); border-left: 1px solid var(--line); align-self: stretch; display: flex; flex-direction: column">
+<div style="padding: 16px 20px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: var(--muted); font-weight: 500">BOB-14</span>
+<span style="display: inline-flex; align-items: center; gap: 5px; color: {{ty.handoff}}; font-size: 12px; font-weight: 600"><span style="width: 7px; height: 7px; border-radius: 2px; background: {{ty.handoff}}"></span>Handoff</span>
+<span style="margin-left: auto"></span>
+<button type="button" aria-label="Copiar enlace a la tarea" style="width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+<button type="button" aria-label="Cerrar detalle" style="width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+<h2 style="margin: 0; font-size: 19px; line-height: 1.3; font-weight: 700">Slice 1c – 4 archivos, esperar 77 tests</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted)">Turno
+<select value="{{turnSel}}" onChange="{{setTurn}}" style="height: 36px; border-radius: 7px; border: 1px solid {{turnSelBorder}}; background: {{turnSelBg}}; color: {{turnSelFg}}; font-size: 14px; font-weight: 700; padding: 0 8px; text-transform: none; letter-spacing: 0">
+<option value="henry">Henry</option>
+<option value="federico">Federico</option>
+<option value="tercero">Tercero</option>
+</select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted)">Estado
+<select value="{{estado}}" onChange="{{setEstado}}" style="height: 36px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-size: 14px; padding: 0 8px; text-transform: none; letter-spacing: 0">
+<option value="todo">Por hacer</option>
+<option value="proceso">En proceso</option>
+<option value="hecho">Terminado</option>
+</select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted)">Fecha límite
+<input type="date" style="height: 34px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-size: 13px; padding: 0 8px; text-transform: none; letter-spacing: 0"></label>
+</div>
+</div>
+
+<div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 22px">
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Instrucciones</h3>
+<p style="margin: 0; line-height: 1.55">Correcciones sobre Slice 1b. Cuatro archivos, sin migraciones: no hay nada que aplicar a ninguna base de datos. Corre <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--chip); padding: 1px 5px; border-radius: 4px">supabase db reset --no-seed &amp;&amp; npm test</code> y espera 77 pasando.</p>
+<p style="margin: 0; line-height: 1.55">El naming test ahora enumera con <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--chip); padding: 1px 5px; border-radius: 4px">git ls-files</code>, y <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--chip); padding: 1px 5px; border-radius: 4px">tests/ci-coverage.test.mjs</code> verifica que cada test corra en algún job de CI.</p>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Report-back esperado</h3>
+<sc-for list="{{checks}}" as="k" hint-placeholder-count="3">
+<label style="display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; line-height: 1.4; cursor: pointer">
+<input type="checkbox" checked="{{k.done}}" onChange="{{k.toggle}}" style="width: 18px; height: 18px; margin: 1px 0 0; accent-color: {{t.accent}}">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 500">{{k.label}}</span><span style="font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', ui-monospace, monospace">{{k.detail}}</span></span>
+</label>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px">
+<h3 style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Adjuntos · 3</h3>
+<button type="button" style="margin-left: auto; height: 32px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--fg); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>Subir</button>
+</div>
+<sc-for list="{{files}}" as="a" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg)">
+<span style="width: 34px; height: 34px; flex: 0 0 34px; border-radius: 6px; background: var(--chip); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600">{{a.ext}}</span>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+<span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{a.name}}</span>
+<span style="font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', ui-monospace, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{a.size}} · md5 {{a.md5}}</span>
+</div>
+<button type="button" aria-label="{{a.copyLabel}}" style="width: 34px; height: 34px; flex: 0 0 34px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></button>
+</div>
+</sc-for>
+<span style="font-size: 12px; color: var(--muted)">md5 y sha1 se calculan al subir cada archivo.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h3 style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Respuestas · 4</h3>
+<sc-for list="{{thread}}" as="m" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px">
+<span style="width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; background: {{m.dot}}; color: {{avFg}}; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px">{{m.ini}}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px"><span style="font-weight: 600; font-size: 13px">{{m.who}}</span><span style="color: var(--muted)">{{m.when}}</span>
+<sc-if value="{{m.hasTag}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: {{m.tagFg}}; background: {{m.tagBg}}; padding: 2px 7px; border-radius: 5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>{{m.tag}}</span></sc-if>
+</div>
+<div style="background: {{m.bubble}}; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; line-height: 1.5">{{m.text}}</div>
+</div>
+</div>
+</sc-for>
+<div style="border: 1px solid var(--line); border-radius: 10px; background: var(--bg); display: flex; flex-direction: column">
+<label style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)" for="resp-bob14">Escribe una respuesta</label>
+<textarea id="resp-bob14" rows="3" placeholder="Responder a Federico…" style="border: 0; outline: 0; background: transparent; color: var(--fg); font-size: 14px; padding: 10px 12px; resize: vertical"></textarea>
+<div style="display: flex; align-items: center; gap: 8px; padding: 8px; border-top: 1px solid var(--line); flex-wrap: wrap">
+<button type="button" aria-label="Adjuntar archivo" style="width: 36px; height: 36px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg></button>
+<label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted)">Marcar como
+<select value="{{marca}}" onChange="{{setMarca}}" style="height: 36px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font-size: 13px; padding: 0 6px">
+<option value="normal">Respuesta</option>
+<option value="oficial">Respuesta oficial</option>
+<option value="firmada">Decisión firmada</option>
+</select></label>
+<label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted)">Pasar turno a
+<select style="height: 36px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font-size: 13px; padding: 0 6px">
+<option>Federico</option>
+<option>Mantener en Henry</option>
+<option>Tercero</option>
+</select></label>
+<button type="button" style="margin-left: auto; height: 36px; padding: 0 14px; border-radius: 7px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 13px; cursor: pointer">Enviar</button>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 8px">
+<h3 style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Actividad en Git</h3>
+<span style="font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px">Automático · solo lectura</span>
+</div>
+<div style="border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: {{prOpenFg}}; background: {{prOpenBg}}; padding: 2px 8px; border-radius: 5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8v8"/><path d="M18 16V9a3 3 0 0 0-3-3h-4"/></svg>Abierto</span>
+<span style="font-weight: 600">PR #23</span><span style="color: var(--muted); font-size: 13px">Slice 1c: guards que descubren en vez de enumerar</span>
+</div>
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted)">bob-14-slice-1c → main</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{jobs}}" as="j" hint-placeholder-count="5">
+<span style="display: inline-flex; align-items: center; gap: 5px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; color: var(--ok); background: var(--okbg); padding: 3px 7px; border-radius: 5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>{{j}}</span>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{commits}}" as="cm" hint-placeholder-count="3">
+<div style="display: flex; align-items: baseline; gap: 10px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 13px">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--accent); font-weight: 500">{{cm.sha}}</span>
+<span style="flex: 1; min-width: 0">{{cm.msg}}</span>
+<span style="font-size: 12px; color: var(--muted); white-space: nowrap">{{cm.when}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 6px">
+<h3 style="margin: 0 0 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Historial</h3>
+<sc-for list="{{history}}" as="h" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; font-size: 13px; line-height: 1.4">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted); flex: 0 0 96px">{{h.when}}</span>
+<span>{{h.text}}</span>
+</div>
+</sc-for>
+</section>
+
+</div>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"oscuro":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, filter: 'todo', turn: 'henry', estado: 'proceso', marca: 'normal', checks: [true, false, false] };
+  }
+  renderVals() {
+    const dark = this.state.dark === null ? !!this.props.oscuro : this.state.dark;
+    const m = dark ? 'd' : 'l';
+    const T = {
+      l: { bg: '#F3F4F6', panel: '#FFFFFF', side: '#EAECF0', col: '#E9EBEF', card: '#FFFFFF', line: '#D9DDE3', fg: '#15171C', muted: '#555B67', accent: '#3442C4', onAccent: '#FFFFFF', chip: '#E2E5EA', ok: '#166534', okBg: '#DCF3E3', bad: '#B42318', badBg: '#FDE8E6', sel: '#3442C4' },
+      d: { bg: '#0E1014', panel: '#15181E', side: '#111318', col: '#13161B', card: '#1B1F26', line: '#2A2F38', fg: '#E8EAEE', muted: '#A0A6B2', accent: '#8E9AFF', onAccent: '#0E1014', chip: '#252A33', ok: '#5EE08F', okBg: '#16301F', bad: '#FF8A80', badBg: '#3B1714', sel: '#8E9AFF' }
+    };
+    const t = T[m];
+    const TY = {
+      handoff: { label: 'Handoff', l: '#7C3AED', d: '#BCA2FF' },
+      pregunta: { label: 'Pregunta', l: '#0369A1', d: '#7CC6F2' },
+      decision: { label: 'Decisión', l: '#047857', d: '#62D6AC' },
+      externo: { label: 'Pendiente externo', l: '#9A5B00', d: '#EDB660' }
+    };
+    const TU = {
+      henry: { label: 'Henry', ini: 'H', l: { bg: '#DCE4FF', fg: '#1C338F', dot: '#2E4FD0' }, d: { bg: '#1D2852', fg: '#C7D3FF', dot: '#8EA2FF' } },
+      federico: { label: 'Federico', ini: 'F', l: { bg: '#FFE3CC', fg: '#7F2A00', dot: '#C2410C' }, d: { bg: '#43230E', fg: '#FFCFA9', dot: '#FF9A5C' } },
+      tercero: { label: 'Tercero', ini: 'T', l: { bg: '#ECE7F7', fg: '#46357A', dot: '#6A55B3' }, d: { bg: '#29233F', fg: '#D5CCF6', dot: '#AE9CF2' } },
+      cerrada: { label: 'Cerrada', ini: '', l: { bg: '#EDEFF2', fg: '#4A505C', dot: '#5F6673' }, d: { bg: '#20242B', fg: '#B3B9C4', dot: '#7E8693' } }
+    };
+    const avFg = dark ? '#0E1014' : '#FFFFFF';
+    const raw = [
+      { id: 'BOB-18', type: 'externo', title: 'Nombrar dueño del backup de configuración antes de aplicar en hosted', turn: 'federico', col: 'todo', att: 0, resp: 2, age: 'hace 25 d' },
+      { id: 'BOB-15', type: 'externo', title: 'Activar branch protection (5 jobs requeridos)', turn: 'tercero', who: 'repo admin', col: 'todo', att: 0, resp: 3, age: 'hace 25 d' },
+      { id: 'BOB-17', type: 'pregunta', title: 'Slice 2: contrato de lectura del feeder (tablas, columnas, quién correlaciona)', turn: 'federico', col: 'todo', att: 1, resp: 1, age: 'hace 26 d' },
+      { id: 'BOB-14', type: 'handoff', title: 'Slice 1c – 4 archivos, esperar 77 tests', turn: 'henry', col: 'proceso', att: 3, resp: 4, age: 'hace 25 d', selected: true, git: { branch: 'bob-14-slice-1c', pr: 'PR #23 abierto', ci: 'CI 5/5', merged: false } },
+      { id: 'BOB-16', type: 'externo', title: 'TTL de 13 meses – platform team', turn: 'tercero', who: 'platform team', col: 'proceso', att: 0, resp: 2, age: 'hace 27 d', deadline: 'Vence 6 oct · en 3 días' },
+      { id: 'BOB-12', type: 'handoff', title: 'Slice 1b – correcciones, 74 tests', turn: 'cerrada', status: 'entregada', col: 'hecho', att: 2, resp: 5, age: '8 sep', git: { branch: 'bob-12-slice-1b', pr: 'PR #21 mergeado', ci: 'CI 5/5', merged: true } },
+      { id: 'N-05', type: 'pregunta', title: '¿Projection / Evidence Packages existe o es solo un concepto?', turn: 'cerrada', status: 'respondida', col: 'hecho', att: 0, resp: 2, age: '7 sep' },
+      { id: 'N-07', type: 'pregunta', title: '¿La redacción de PII elimina nombres antes de Hivemonic?', turn: 'cerrada', status: 'respondida', col: 'hecho', att: 0, resp: 2, age: '7 sep' },
+      { id: 'BOB-13', type: 'decision', title: 'Postgres 17.6 se mantiene; el pin se revisa con el primer VPS', turn: 'cerrada', status: 'firmada', col: 'hecho', att: 0, resp: 1, age: '7 sep' }
+    ];
+    const f = this.state.filter;
+    const pass = (c) => f === 'todo' || (f === 'mio' && c.turn === 'henry') || (f === 'fede' && c.turn === 'federico') || (f === 'terc' && c.turn === 'tercero');
+    const deco = (c) => {
+      const tu = TU[c.turn];
+      const sty = tu[m];
+      const closed = c.turn === 'cerrada';
+      return Object.assign({}, c, {
+        typeLabel: TY[c.type].label,
+        typeColor: TY[c.type][m],
+        turnBg: sty.bg, turnFg: sty.fg, turnDot: sty.dot, avFg: avFg, ini: tu.ini,
+        closed: closed, open: !closed,
+        turnText: closed ? 'Cerrada · ' + c.status : 'Turno: ' + tu.label + (c.who ? ' · ' + c.who : ''),
+        mine: c.turn === 'henry',
+        hasDeadline: !!c.deadline,
+        hasGit: !!c.git,
+        git: c.git || {},
+        prColor: c.git && c.git.merged ? TY.handoff[m] : t.ok,
+        border: c.selected ? t.sel : t.line,
+        shadow: c.selected ? '0 0 0 1px ' + t.sel : 'none'
+      });
+    };
+    const colDefs = [
+      { key: 'todo', name: 'Por hacer', ring: t.muted, fill: 'transparent' },
+      { key: 'proceso', name: 'En proceso', ring: '#D9A400', fill: dark ? '#4A3B00' : '#FFF1B8' },
+      { key: 'hecho', name: 'Terminado', ring: t.ok, fill: t.ok }
+    ];
+    const cols = colDefs.map((cd) => {
+      const cards = raw.filter((c) => c.col === cd.key && pass(c)).map(deco);
+      return Object.assign({}, cd, { cards: cards, count: cards.length, empty: cards.length === 0 });
+    });
+    const count = (turn) => raw.filter((c) => c.turn === turn).length;
+    const fdefs = [
+      { key: 'todo', label: 'Todo', count: raw.length, dot: null },
+      { key: 'mio', label: 'Lo que me toca a mí', count: count('henry'), dot: TU.henry[m].dot },
+      { key: 'fede', label: 'Esperando a Federico', count: count('federico'), dot: TU.federico[m].dot },
+      { key: 'terc', label: 'Terceros', count: count('tercero'), dot: TU.tercero[m].dot }
+    ];
+    const filters = fdefs.map((d) => {
+      const active = f === d.key;
+      return Object.assign({}, d, {
+        active: active,
+        hasDot: !!d.dot,
+        bg: active ? t.fg : t.panel,
+        fg: active ? t.panel : t.fg,
+        border: active ? t.fg : t.line,
+        weight: active ? 600 : 500,
+        pick: () => this.setState({ filter: d.key })
+      });
+    });
+    const ts = TU[this.state.turn][m];
+    const checkDefs = [
+      { label: 'tests / pass / fail / cancelled', detail: '77 / 77 / 0 / 0 · reportado 9 sep' },
+      { label: 'Branch protection con los 5 jobs requeridos', detail: 'depende de BOB-15 (repo admin)' },
+      { label: 'Zip fresco del repositorio', detail: 'git archive desde HEAD, sin re-empaquetar' }
+    ];
+    const checks = checkDefs.map((k, i) => Object.assign({}, k, {
+      done: this.state.checks[i],
+      toggle: () => { const next = this.state.checks.slice(); next[i] = !next[i]; this.setState({ checks: next }); }
+    }));
+    const files = [
+      { ext: 'ZIP', name: 'BOb_v1_Slice1c.zip', size: '18,4 KB', md5: '9f2c41e0…d2a9c853' },
+      { ext: 'MD', name: 'BOb_v1_Slice1c_Handoff.md', size: '9,1 KB', md5: '4b7e0a19…61f0c2de' },
+      { ext: 'PNG', name: 'BzzzBX_Anatomy.png', size: '412 KB', md5: 'c03d8e55…a71b4f90' }
+    ].map((a) => Object.assign({}, a, { copyLabel: 'Copiar hash de ' + a.name }));
+    const fe = TU.federico[m], he = TU.henry[m];
+    const thread = [
+      { who: 'Federico', ini: 'F', dot: fe.dot, when: '8 sep · 21:40', text: 'Slice 1c: cuatro archivos, sin migraciones, unos diez minutos. Corre npm test y espera 77. Tus dos gaps eran correctos; el patrón detrás es un guard que enumera en vez de descubrir.', tag: 'Respuesta oficial', kind: 'oficial' },
+      { who: 'Federico', ini: 'F', dot: fe.dot, when: '8 sep · 21:42', text: 'Los cinco jobs de CI deben ser requeridos en branch protection, no tres.', tag: 'Decisión firmada', kind: 'firmada' },
+      { who: 'Henry', ini: 'H', dot: he.dot, when: '9 sep · 10:40', text: 'Aplicado en bob-14-slice-1c. Primera corrida: 77 / 77 / 0 / 0 en Postgres 17.6.', kind: '' },
+      { who: 'Henry', ini: 'H', dot: he.dot, when: 'Hoy · 09:12', text: 'Branch protection depende de BOB-15 (repo admin). En cuanto esté activa, subo el zip aquí.', kind: '' }
+    ].map((x) => Object.assign({}, x, {
+      hasTag: !!x.tag,
+      tagFg: x.kind === 'firmada' ? t.ok : he.fg,
+      tagBg: x.kind === 'firmada' ? t.okBg : he.bg,
+      bubble: x.who === 'Henry' ? (dark ? '#181D2B' : '#F2F5FF') : t.bg
+    }));
+    return {
+      t: t,
+      avFg: avFg,
+      henryDot: he.dot,
+      ty: { handoff: TY.handoff[m], pregunta: TY.pregunta[m], decision: TY.decision[m], externo: TY.externo[m] },
+      toggleDark: () => this.setState({ dark: !dark }),
+      filters: filters,
+      cols: cols,
+      turnSel: this.state.turn,
+      setTurn: (e) => this.setState({ turn: e.target.value }),
+      turnSelBg: ts.bg, turnSelFg: ts.fg, turnSelBorder: ts.dot,
+      estado: this.state.estado,
+      setEstado: (e) => this.setState({ estado: e.target.value }),
+      marca: this.state.marca,
+      setMarca: (e) => this.setState({ marca: e.target.value }),
+      checks: checks,
+      files: files,
+      thread: thread,
+      prOpenFg: t.ok, prOpenBg: t.okBg,
+      jobs: ['tenancy', 'availability', 'slice0-schema', 'slice1-schema', 'naming'],
+      commits: [
+        { sha: '7be0d14', msg: 'BOB-14 ci-coverage: cada test corre en algún job', when: 'hace 2 h' },
+        { sha: 'a3f91c2', msg: 'BOB-14 naming test enumera con git ls-files', when: 'ayer' },
+        { sha: '51c08e9', msg: 'BOB-14 aplica Slice 1c sobre Slice 1b', when: '9 sep' }
+      ],
+      history: [
+        { when: '8 sep 21:40', text: 'Federico creó la tarea con 3 adjuntos' },
+        { when: '8 sep 21:41', text: 'Turno: Federico → Henry' },
+        { when: '9 sep 10:05', text: 'Estado: Por hacer → En proceso · Henry' },
+        { when: '9 sep 10:31', text: 'PR #23 vinculado automáticamente por el nombre de la rama' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

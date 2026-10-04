@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Relevo · Mi turno</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif}
+a{color:inherit}a:hover{opacity:.85}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="--bg: {{t.bg}}; --panel: {{t.panel}}; --side: {{t.side}}; --line: {{t.line}}; --fg: {{t.fg}}; --muted: {{t.muted}}; --accent: {{t.accent}}; --on-accent: {{t.onAccent}}; --chip: {{t.chip}}; --ok: {{t.ok}}; --bad: {{t.bad}}; --bad-bg: {{t.badBg}}; --warn: {{t.warn}}; --warn-bg: {{t.warnBg}}; min-height: 100vh; background: var(--bg); color: var(--fg); display: flex; flex-wrap: wrap; font-size: 14px">
+
+<nav aria-label="Navegación principal" style="flex: 1 0 220px; max-width: 100%; background: var(--side); border-right: 1px solid var(--line); padding: 18px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--accent)"><path d="M4 8h12l-3-3"/><path d="M20 16H8l3 3"/></svg>
+<span style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em">Relevo</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<a href="Proyectos.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Proyectos</a>
+<a href="MiTurno.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg); background: var(--chip); font-weight: 600">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5 5h14l1 8v6H4v-6z"/></svg>Mi turno<span style="margin-left: auto; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px">3</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0 8px 6px">Proyectos</div>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)"><span style="width: 8px; height: 8px; border-radius: 2px; background: #7C3AED"></span>BOb<span style="margin-left: auto; font-size: 12px; color: var(--muted)">9</span></a>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)"><span style="width: 8px; height: 8px; border-radius: 2px; background: #0E7490"></span>BzzzBX<span style="margin-left: auto; font-size: 12px; color: var(--muted)">9</span></a>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 6px; text-decoration: none; color: var(--fg)"><span style="width: 8px; height: 8px; border-radius: 2px; background: #B45309"></span>Momentum<span style="margin-left: auto; font-size: 12px; color: var(--muted)">10</span></a>
+</div>
+<div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 6px 0; border-top: 1px solid var(--line)">
+<span style="width: 30px; height: 30px; border-radius: 50%; background: {{tu.henry.dot}}; color: {{avFg}}; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px">H</span>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-weight: 600">Henry</span><span style="font-size: 12px; color: var(--muted)">Desarrollo</span></div>
+<button type="button" onClick="{{toggleDark}}" aria-label="Cambiar modo claro u oscuro" style="margin-left: auto; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+</button>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 28px 32px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.015em">Mi turno</h1>
+<p style="margin: 0; color: var(--muted)">Todo lo que espera a {{who}} en todos los proyectos, por fecha límite y antigüedad.</p>
+</div>
+<div role="group" aria-label="Ver turno de" style="margin-left: auto; display: inline-flex; padding: 3px; border-radius: 10px; background: var(--chip); gap: 3px">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+<button type="button" onClick="{{tb.pick}}" aria-pressed="{{tb.active}}" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 0; background: {{tb.bg}}; color: {{tb.fg}}; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{tb.dot}}"></span>{{tb.label}}<span style="opacity: .75">{{tb.count}}</span></button>
+</sc-for>
+</div>
+</header>
+
+<div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow-x: auto">
+<table style="width: 100%; border-collapse: collapse; min-width: 860px">
+<thead>
+<tr style="text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">
+<th scope="col" style="padding: 12px 16px; font-weight: 600; border-bottom: 1px solid var(--line)">ID</th>
+<th scope="col" style="padding: 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Proyecto</th>
+<th scope="col" style="padding: 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Tipo</th>
+<th scope="col" style="padding: 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Tarea</th>
+<th scope="col" style="padding: 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Esperando desde</th>
+<th scope="col" style="padding: 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Fecha límite</th>
+<th scope="col" style="padding: 12px 16px 12px 10px; font-weight: 600; border-bottom: 1px solid var(--line)">Git</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+<tr style="border-bottom: 1px solid var(--line)">
+<td style="padding: 14px 16px; vertical-align: top"><a href="Main.dc.html" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600; color: var(--accent); text-decoration: none">{{r.id}}</a></td>
+<td style="padding: 14px 10px; vertical-align: top"><span style="display: inline-flex; align-items: center; gap: 7px; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{r.pColor}}"></span>{{r.project}}</span></td>
+<td style="padding: 14px 10px; vertical-align: top"><span style="display: inline-flex; align-items: center; gap: 5px; color: {{r.typeColor}}; font-weight: 600; font-size: 13px; white-space: nowrap"><span style="width: 7px; height: 7px; border-radius: 2px; background: {{r.typeColor}}"></span>{{r.typeLabel}}</span></td>
+<td style="padding: 14px 10px; vertical-align: top; font-weight: 500; line-height: 1.4; max-width: 420px">{{r.title}}</td>
+<td style="padding: 14px 10px; vertical-align: top; color: var(--muted); white-space: nowrap">{{r.age}}</td>
+<td style="padding: 14px 10px; vertical-align: top; white-space: nowrap">
+<sc-if value="{{r.hasDeadline}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: {{r.dlFg}}; background: {{r.dlBg}}; padding: 3px 8px; border-radius: 5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{r.deadline}}</span></sc-if>
+<sc-if value="{{r.noDeadline}}" hint-placeholder-val="{{true}}"><span style="color: var(--muted)">Sin fecha</span></sc-if>
+</td>
+<td style="padding: 14px 16px 14px 10px; vertical-align: top; white-space: nowrap; font-size: 12px">
+<sc-if value="{{r.hasGit}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 10px"><span style="font-weight: 500">{{r.pr}}</span><span style="display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-weight: 600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>{{r.ci}}</span></span></sc-if>
+<sc-if value="{{r.noGit}}" hint-placeholder-val="{{true}}"><span style="color: var(--muted)">Sin código vinculado</span></sc-if>
+</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted)">Esperando a terceros · 2</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px">
+<sc-for list="{{terc}}" as="x" hint-placeholder-count="2">
+<a href="Main.dc.html" style="text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: var(--muted); font-weight: 500">{{x.id}}</span><span style="color: {{tuT.fg}}; background: {{tuT.bg}}; padding: 2px 7px; border-radius: 5px; font-weight: 600">{{x.who}}</span>
+<sc-if value="{{x.hasDeadline}}" hint-placeholder-val="{{false}}"><span style="margin-left: auto; color: var(--bad); font-weight: 600">{{x.deadline}}</span></sc-if></div>
+<span style="font-weight: 500; line-height: 1.4">{{x.title}}</span>
+</a>
+</sc-for>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"oscuro":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, who: 'henry' };
+  }
+  renderVals() {
+    const dark = this.state.dark === null ? !!this.props.oscuro : this.state.dark;
+    const m = dark ? 'd' : 'l';
+    const T = {
+      l: { bg: '#F3F4F6', panel: '#FFFFFF', side: '#EAECF0', line: '#D9DDE3', fg: '#15171C', muted: '#555B67', accent: '#3442C4', onAccent: '#FFFFFF', chip: '#E2E5EA', ok: '#166534', bad: '#B42318', badBg: '#FDE8E6', warn: '#8A5300', warnBg: '#FFF1D6' },
+      d: { bg: '#0E1014', panel: '#15181E', side: '#111318', line: '#2A2F38', fg: '#E8EAEE', muted: '#A0A6B2', accent: '#8E9AFF', onAccent: '#0E1014', chip: '#252A33', ok: '#5EE08F', bad: '#FF8A80', badBg: '#3B1714', warn: '#F2C46B', warnBg: '#3A2A0C' }
+    };
+    const t = T[m];
+    const TY = {
+      handoff: { label: 'Handoff', l: '#7C3AED', d: '#BCA2FF' },
+      pregunta: { label: 'Pregunta', l: '#0369A1', d: '#7CC6F2' },
+      decision: { label: 'Decisión', l: '#047857', d: '#62D6AC' },
+      externo: { label: 'Pendiente externo', l: '#9A5B00', d: '#EDB660' }
+    };
+    const TU = {
+      henry: { label: 'Henry', l: { bg: '#DCE4FF', fg: '#1C338F', dot: '#2E4FD0' }, d: { bg: '#1D2852', fg: '#C7D3FF', dot: '#8EA2FF' } },
+      federico: { label: 'Federico', l: { bg: '#FFE3CC', fg: '#7F2A00', dot: '#C2410C' }, d: { bg: '#43230E', fg: '#FFCFA9', dot: '#FF9A5C' } },
+      tercero: { l: { bg: '#ECE7F7', fg: '#46357A', dot: '#6A55B3' }, d: { bg: '#29233F', fg: '#D5CCF6', dot: '#AE9CF2' } }
+    };
+    const PC = { BOb: '#7C3AED', BzzzBX: '#0E7490', Momentum: '#B45309' };
+    const data = {
+      henry: [
+        { id: 'BZX-05', project: 'BzzzBX', type: 'handoff', title: 'P5: schema bzzz y 3 roles con grants (aplicación, feeder, solo lectura)', age: 'hace 12 días', deadline: 'Vence 10 oct', soon: false },
+        { id: 'BOB-14', project: 'BOb', type: 'handoff', title: 'Slice 1c – 4 archivos, esperar 77 tests', age: 'hace 25 días', pr: 'PR #23', ci: 'CI 5/5' },
+        { id: 'BZX-04', project: 'BzzzBX', type: 'pregunta', title: '¿El schema bzzz va en el mismo Postgres que la autenticación?', age: 'hace 12 días' }
+      ],
+      federico: [
+        { id: 'BOB-17', project: 'BOb', type: 'pregunta', title: 'Slice 2: contrato de lectura del feeder (tablas, columnas, quién correlaciona)', age: 'hace 26 días' },
+        { id: 'BOB-18', project: 'BOb', type: 'externo', title: 'Nombrar dueño del backup de configuración antes de aplicar en hosted', age: 'hace 25 días' },
+        { id: 'MOM-09', project: 'Momentum', type: 'decision', title: "Residuo DST en toInstantMs: ¿aplicar iso + 'Z'?", age: 'hace 23 días' }
+      ]
+    };
+    const who = this.state.who;
+    const rows = data[who].map((r) => Object.assign({}, r, {
+      pColor: PC[r.project],
+      typeColor: TY[r.type][m],
+      typeLabel: TY[r.type].label,
+      hasDeadline: !!r.deadline, noDeadline: !r.deadline,
+      dlFg: r.soon ? t.bad : t.warn, dlBg: r.soon ? t.badBg : t.warnBg,
+      hasGit: !!r.pr, noGit: !r.pr
+    }));
+    const tabs = ['henry', 'federico'].map((k) => ({
+      label: TU[k].label,
+      count: data[k].length,
+      active: who === k,
+      dot: TU[k][m].dot,
+      bg: who === k ? t.panel : 'transparent',
+      fg: who === k ? t.fg : t.muted,
+      pick: () => this.setState({ who: k })
+    }));
+    return {
+      t: t,
+      avFg: dark ? '#0E1014' : '#FFFFFF',
+      tu: { henry: TU.henry[m] },
+      tuT: TU.tercero[m],
+      who: TU[who].label,
+      tabs: tabs,
+      rows: rows,
+      terc: [
+        { id: 'BOB-16', who: 'platform team', title: 'TTL de 13 meses para business events', hasDeadline: true, deadline: 'Vence 6 oct' },
+        { id: 'BOB-15', who: 'repo admin', title: 'Activar branch protection (5 jobs requeridos)', hasDeadline: false, deadline: '' }
+      ],
+      toggleDark: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>
