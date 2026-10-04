@@ -1,0 +1,11 @@
+pnpm-lock.yaml
+.next
+next-env.d.ts
+supabase/.temp
+supabase/.branches
+playwright-report
+test-results
+
+# Documentos del proyecto: se escriben a mano, Prettier no los toca.
+*.md
+docs
