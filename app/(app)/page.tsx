@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ProjectMark } from "@/components/relevo/chips";
+import { NewProjectDialog } from "@/components/relevo/new-project-dialog";
 import { THIRD_PARTY_COLOR } from "@/lib/relevo/domain";
 import { getProjectsOverview, getViewer } from "@/lib/relevo/queries";
 
@@ -57,6 +58,10 @@ export default async function ProjectsPage() {
             />
           </div>
         )}
+        <NewProjectDialog
+          people={people.map((p) => ({ id: p.id, name: p.display_name }))}
+          me={me ?? ""}
+        />
       </header>
 
       {projects.length === 0 ? (

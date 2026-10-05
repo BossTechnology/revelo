@@ -57,16 +57,16 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <LayoutGrid className="size-4" aria-hidden />
             Proyectos
           </Link>
-          <span
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground"
-            title="Llega en la Fase 3"
+          <Link
+            href="/mi-turno"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar-accent"
           >
             <Inbox className="size-4" aria-hidden />
             Mi turno
             <span className="ml-auto rounded bg-secondary px-1.5 font-mono text-xs text-foreground">
               {myTurn}
             </span>
-          </span>
+          </Link>
         </div>
 
         <div className="flex flex-col gap-1 text-sm">

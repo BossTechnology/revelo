@@ -36,7 +36,7 @@ export function TurnChip({
       style={{ "--turn": turn.color } as CSSVars}
       className={cn(
         "inline-flex min-w-0 items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold",
-        "bg-[color-mix(in_oklab,var(--turn)_16%,var(--card))] text-[color-mix(in_oklab,var(--turn)_70%,var(--foreground))]",
+        "bg-[color-mix(in_oklab,var(--turn)_16%,var(--card))] text-[color-mix(in_oklab,var(--turn)_70%,var(--foreground))] dark:text-[color-mix(in_oklab,var(--turn)_40%,var(--foreground))]",
         className,
       )}
     >

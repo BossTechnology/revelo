@@ -256,7 +256,23 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "hook_before_user_created":
+            "create_project":
+{ Args: { "member_ids"?: (string)[],"project_color": string,"project_key": string,"project_name": string }; Returns: {
+              "archived_at": string | null,
+"color": string,
+"created_at": string,
+"id": string,
+"key": string,
+"name": string,
+"next_number": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "projects"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"hook_before_user_created":
 { Args: { "event": Json }; Returns: Json
                            },
 "is_allowed_email":
@@ -267,6 +283,9 @@ isOneToOne: false
                            },
 "request_via":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"set_attachment_hashes":
+{ Args: { "attachment": string,"md5_hex": string,"sha1_hex": string }; Returns: undefined
                            },
 "storage_project":
 { Args: { "object_name": string }; Returns: string

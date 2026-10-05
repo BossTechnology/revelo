@@ -4,7 +4,7 @@ import { adminClient, testEmail, userExists } from "../support/supabase";
 
 /**
  * El hook "Before User Created" pasando por Auth de verdad (inviteUserByEmail, como hace
- * scripts/invite.ts). pgTAP prueba la función, pero no puede ejecutarla con el rol de Auth:
+ * scripts/invite.mts). pgTAP prueba la función, pero no puede ejecutarla con el rol de Auth:
  * aquí se distingue un rechazo del hook (403) de un hook que falla (500).
  */
 test.describe("invitación y hook Before User Created", () => {
