@@ -1,4 +1,4 @@
-import { BookMarked } from "lucide-react";
+import { BookMarked, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -118,12 +118,22 @@ export default async function BoardLayout({
             )}
           </div>
         </div>
-        <NewTaskDialog
-          projectId={project.id}
-          projectKey={project.key}
-          members={members.map(({ id, name }) => ({ id, name }))}
-          me={me}
-        />
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/ajustes/proyecto/${project.key}`}
+            aria-label="Ajustes del proyecto"
+            title="Ajustes del proyecto"
+            className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
+          >
+            <Settings className="size-4" aria-hidden />
+          </Link>
+          <NewTaskDialog
+            projectId={project.id}
+            projectKey={project.key}
+            members={members.map(({ id, name }) => ({ id, name }))}
+            me={me}
+          />
+        </div>
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
