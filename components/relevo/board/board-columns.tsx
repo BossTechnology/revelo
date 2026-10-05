@@ -345,6 +345,9 @@ function DraggableCard({
           )}
         </div>
       )}
+      {card.git?.merged && card.status !== "terminado" && (
+        <MergedPrompt card={card} projectKey={projectKey} />
+      )}
 
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <span
@@ -364,5 +367,39 @@ function DraggableCard({
         <span className="ml-auto">{card.age}</span>
       </div>
     </article>
+  );
+}
+
+/** PR mergeado: no se mueve solo (PLAN.md §6); una persona confirma con un clic. */
+function MergedPrompt({
+  card,
+  projectKey,
+}: {
+  card: CardView;
+  projectKey: string;
+}) {
+  const [pending, start] = useTransition();
+  return (
+    <div className="relative z-10 flex items-center gap-2 rounded-md border border-dashed px-2 py-1.5 text-xs">
+      <span className="flex-1">PR mergeado: ¿mover a Terminado?</span>
+      <button
+        type="button"
+        aria-label={`Mover ${card.key} a Terminado`}
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const r = await moveTask({
+              taskId: card.id,
+              projectKey,
+              status: "terminado",
+            });
+            if (!r.ok) toast.error(r.error);
+          })
+        }
+        className="rounded bg-primary px-2 py-0.5 font-semibold text-primary-foreground disabled:opacity-60"
+      >
+        Sí, mover
+      </button>
+    </div>
   );
 }

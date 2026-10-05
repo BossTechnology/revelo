@@ -299,3 +299,89 @@ export async function attachmentDownloadUrl(
   if (error) return { ok: false, error: friendly(error) };
   return { ok: true, data: { url: data.signedUrl } };
 }
+
+export async function updateProjectSettings(input: {
+  projectId: string;
+  projectKey: string;
+  name: string;
+  color: string;
+}): Promise<ActionResult> {
+  if (!input.name.trim())
+    return { ok: false, error: "El proyecto necesita un nombre." };
+  if (!/^#[0-9A-Fa-f]{6}$/.test(input.color))
+    return { ok: false, error: "Color no válido." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("projects")
+    .update({ name: input.name.trim(), color: input.color })
+    .eq("id", input.projectId);
+  if (error) return { ok: false, error: friendly(error) };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function addProjectMember(input: {
+  projectId: string;
+  projectKey: string;
+  userId: string;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("project_members")
+    .insert({ project_id: input.projectId, user_id: input.userId });
+  if (error) return { ok: false, error: friendly(error) };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Conecta un repo de cualquier organización (owner/repo) con la instalación de la GitHub App. */
+export async function connectRepo(input: {
+  projectId: string;
+  projectKey: string;
+  fullName: string;
+  installationId: number;
+}): Promise<ActionResult> {
+  const match = input.fullName
+    .trim()
+    .match(/^([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/);
+  if (!match)
+    return { ok: false, error: "Escribe el repo como organizacion/repo." };
+  if (!Number.isInteger(input.installationId) || input.installationId <= 0) {
+    return {
+      ok: false,
+      error: "Falta el número de instalación de la GitHub App.",
+    };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("project_repos").insert({
+    project_id: input.projectId,
+    owner: match[1]!,
+    repo: match[2]!,
+    installation_id: input.installationId,
+  });
+  if (error) {
+    if (error.code === "23505")
+      return { ok: false, error: "Ese repo ya está conectado a un proyecto." };
+    return { ok: false, error: friendly(error) };
+  }
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function disconnectRepo(input: {
+  projectId: string;
+  projectKey: string;
+  owner: string;
+  repo: string;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("project_repos")
+    .delete()
+    .eq("project_id", input.projectId)
+    .eq("owner", input.owner)
+    .eq("repo", input.repo);
+  if (error) return { ok: false, error: friendly(error) };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

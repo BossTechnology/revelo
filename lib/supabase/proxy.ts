@@ -7,7 +7,15 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
  * Rutas que no exigen sesión web. El MCP y su metadata se autentican con el token OAuth de la IA
  * (withMcpAuth responde 401 con WWW-Authenticate); todo lo demás exige haber entrado.
  */
-const PUBLIC_PATHS = ["/login", "/auth/", "/api/mcp", "/.well-known/"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/",
+  "/api/mcp",
+  "/.well-known/",
+  // Webhook (firma HMAC) y cron (CRON_SECRET): se autentican solos.
+  "/api/github/",
+  "/api/cron/",
+];
 
 const isPublic = (pathname: string) =>
   PUBLIC_PATHS.some((p) =>

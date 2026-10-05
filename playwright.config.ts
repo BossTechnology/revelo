@@ -4,6 +4,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Variables del Supabase local (`pnpm env:local`): las usan los tests y el servidor.
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+// Secretos de prueba para el webhook de GitHub y el cron (el servidor de prueba los hereda).
+process.env.GITHUB_WEBHOOK_SECRET ??= "secreto-webhook-e2e";
+process.env.CRON_SECRET ??= "secreto-cron-e2e";
 
 const port = 3000;
 const baseURL = `http://localhost:${port}`;
