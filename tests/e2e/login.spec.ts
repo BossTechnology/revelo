@@ -20,6 +20,19 @@ async function openMagicLink(page: Page, email: string) {
 }
 
 test.describe("login (PLAN.md §10.1)", () => {
+  test("si Supabase rechaza la cuenta de Google, /login lo explica sin revelar más", async ({
+    page,
+  }) => {
+    // Así vuelve Supabase cuando el registro está cerrado o el hook rechaza el correo.
+    await page.goto(
+      "/auth/callback?error=access_denied&error_code=signup_disabled&error_description=Signups+not+allowed",
+    );
+    await expect(page).toHaveURL("/login?error=acceso");
+    await expect(page.getByRole("alert")).toHaveText(
+      "Esa cuenta no tiene acceso. Relevo es solo con invitación.",
+    );
+  });
+
   test("un correo invitado recibe el enlace mágico, entra y llega a /", async ({
     page,
   }) => {

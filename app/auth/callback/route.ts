@@ -3,7 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { safeNextPath } from "@/lib/auth/next-path";
 import { createClient } from "@/lib/supabase/server";
 
-/** Vuelta de Google (PKCE): cambia el `code` por la sesión. */
+/**
+ * Vuelta de Google (PKCE): cambia el `code` por la sesión. Si Supabase rechazó la cuenta
+ * (registro cerrado o hook: no está invitada) vuelve con ?error=… en vez de un `code`.
+ */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
@@ -15,5 +18,6 @@ export async function GET(request: NextRequest) {
     if (!error) return NextResponse.redirect(new URL(next, origin));
   }
 
-  return NextResponse.redirect(new URL("/login?error=enlace", origin));
+  const reason = searchParams.has("error") ? "acceso" : "enlace";
+  return NextResponse.redirect(new URL(`/login?error=${reason}`, origin));
 }

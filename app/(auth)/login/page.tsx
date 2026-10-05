@@ -14,7 +14,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const next = safeNextPath(
     typeof params.next === "string" ? params.next : null,
   );
-  const linkError = params.error === "enlace";
+  const error =
+    params.error === "enlace" || params.error === "acceso"
+      ? params.error
+      : null;
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -40,7 +43,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Solo para personas invitadas.
           </p>
         </div>
-        <LoginForm next={next} linkError={linkError} />
+        <LoginForm next={next} error={error} />
       </main>
     </div>
   );

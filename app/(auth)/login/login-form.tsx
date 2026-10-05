@@ -11,12 +11,19 @@ import { createClient } from "@/lib/supabase/client";
 
 import { sendMagicLink, type MagicLinkState } from "./actions";
 
+export type LoginError = "enlace" | "acceso";
+
+const ERROR_MESSAGES: Record<LoginError, string> = {
+  enlace: "El enlace no es válido o ya venció. Pide uno nuevo.",
+  acceso: "Esa cuenta no tiene acceso. Relevo es solo con invitación.",
+};
+
 export function LoginForm({
   next,
-  linkError,
+  error,
 }: {
   next: string;
-  linkError: boolean;
+  error: LoginError | null;
 }) {
   const [state, formAction, sending] = useActionState<MagicLinkState, FormData>(
     sendMagicLink,
@@ -45,9 +52,9 @@ export function LoginForm({
   return (
     <Card>
       <CardContent className="flex flex-col gap-5">
-        {linkError && (
+        {error && (
           <p role="alert" className="rounded-md bg-muted px-3 py-2 text-sm">
-            El enlace no es válido o ya venció. Pide uno nuevo.
+            {ERROR_MESSAGES[error]}
           </p>
         )}
 
