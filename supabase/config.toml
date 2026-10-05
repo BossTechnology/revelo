@@ -464,3 +464,8 @@ max_client_conn = 200
 [remotes.staging.storage.analytics]
 enabled = true
 max_namespaces = 10
+
+# Google en staging: client ID y secret salen de .env.staging.local (no versionado).
+[remotes.staging.auth.external.google]
+enabled = true
+skip_nonce_check = false

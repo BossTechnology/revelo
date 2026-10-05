@@ -2,10 +2,13 @@
  * Invita a una persona a Relevo (PLAN.md §4).
  *
  *   pnpm invite <correo> --nombre "Federico" --rol arquitectura [--sitio https://relevo.dominio]
+ *   pnpm invite <correo> --nombre "Federico" --rol arquitectura --sin-correo
  *
  * 1. Agrega el correo (normalizado) a allowed_emails: sin esto el hook rechaza la cuenta.
  * 2. Crea la cuenta con inviteUserByEmail, con nombre y rol en los metadatos. El trigger
  *    handle_new_user crea el perfil con esos datos.
+ *    Con --sin-correo la crea ya confirmada y sin enviar nada (createUser): sirve cuando el
+ *    entorno aún no tiene SMTP propio. La persona entra con Google o pidiendo el enlace mágico.
  *
  * Usa SUPABASE_SECRET_KEY: es un script de servidor, nunca se ejecuta en el navegador ni en el MCP.
  * Lee NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SECRET_KEY del entorno (pnpm invite carga .env.local).
@@ -28,6 +31,7 @@ const { values, positionals } = parseArgs({
     nombre: { type: "string" },
     rol: { type: "string" },
     sitio: { type: "string" },
+    "sin-correo": { type: "boolean", default: false },
   },
 });
 
@@ -63,12 +67,21 @@ const { error: allowError } = await admin
 if (allowError)
   fail(`No se pudo agregar a allowed_emails: ${allowError.message}`);
 
-const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-  data: { display_name: name, role },
-  redirectTo: redirectTo.toString(),
-});
+const metadata = { display_name: name, role };
+const { data, error } = values["sin-correo"]
+  ? await admin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: metadata,
+    })
+  : await admin.auth.admin.inviteUserByEmail(email, {
+      data: metadata,
+      redirectTo: redirectTo.toString(),
+    });
 if (error) fail(`No se pudo invitar a ${email}: ${error.message}`);
 
 console.log(
-  `✓ Invitación enviada a ${email} (${name}, ${role}). Usuario ${data.user.id}.`,
+  values["sin-correo"]
+    ? `✓ Cuenta creada sin correo para ${email} (${name}, ${role}). Usuario ${data.user.id}.`
+    : `✓ Invitación enviada a ${email} (${name}, ${role}). Usuario ${data.user.id}.`,
 );
