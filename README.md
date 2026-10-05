@@ -21,3 +21,25 @@ Next.js · Supabase (Postgres, Auth, Storage, Realtime) · Vercel · GitHub App 
 ## Empezar
 
 Abrir esta carpeta con Claude Code y usar el prompt de la sección 15 de `PLAN.md`.
+
+## Conectar las IAs (MCP)
+
+URL del servidor MCP: `https://relevo-bosstechnology.vercel.app/api/mcp` (hasta la Fase 6 usa el Supabase de staging).
+
+- **Claude (web, desktop, Cowork):** Ajustes → Conectores → Agregar conector personalizado → pegar la URL. Claude se registra solo y abre `/oauth/consent` para que apruebes.
+- **Claude Code:** `claude mcp add --transport http relevo https://relevo-bosstechnology.vercel.app/api/mcp` y luego `/mcp` para autenticarse.
+- Los clientes autorizados se ven y se revocan en **Conexiones de IA** (`/ajustes/conexiones`).
+
+Línea para el `CLAUDE.md` de cada repo de proyecto:
+
+> Antes de trabajar, lee la tarea en Relevo con `ver_tarea` usando el ID de la rama. Al terminar, responde con el report-back y pasa el turno.
+
+## Desarrollo local
+
+```bash
+supabase start
+pnpm env:local     # escribe en .env.local la URL y las claves del Supabase local
+pnpm dev
+```
+
+Seed: `henry@relevo.test` y `federico@relevo.test` (pide el enlace mágico y ábrelo desde Mailpit, http://127.0.0.1:55324).

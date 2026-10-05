@@ -381,13 +381,12 @@ enabled = false
 # domain = "example.clerk.accounts.dev"
 
 # OAuth server configuration
+# OAuth 2.1 Server para el MCP (PLAN.md §7): Claude se registra solo (DCR) y la persona aprueba en
+# /oauth/consent. Los tokens traen el claim client_id, que request_via() usa para marcar via = mcp.
 [auth.oauth_server]
-# Enable OAuth server functionality
-enabled = false
-# Path for OAuth consent flow UI
+enabled = true
 authorization_url_path = "/oauth/consent"
-# Allow dynamic client registration
-allow_dynamic_registration = false
+allow_dynamic_registration = true
 
 [edge_runtime]
 enabled = true
@@ -440,7 +439,9 @@ enabled = true
 project_id = "gtyjlrdqafpbvnjnzjqp"
 
 [remotes.staging.auth]
-site_url = "https://relevo-git-main-bosstechnology.vercel.app"
+# Hasta la Fase 6, el entorno Production de Vercel usa este Supabase de staging: es la URL estable
+# para el consentimiento OAuth del MCP (/oauth/consent) y para la ronda completa.
+site_url = "https://relevo-bosstechnology.vercel.app"
 additional_redirect_urls = ["https://*-bosstechnology.vercel.app/**"]
 
 [remotes.staging.auth.rate_limit]

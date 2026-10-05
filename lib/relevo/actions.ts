@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { sanitizeFilename } from "@/lib/attachments/finalize";
 import { createClient } from "@/lib/supabase/server";
 
 import type { TaskStatus, TaskType } from "./domain";
@@ -297,14 +298,4 @@ export async function attachmentDownloadUrl(
     .createSignedUrl(att.storage_path, 300, { download: att.filename });
   if (error) return { ok: false, error: friendly(error) };
   return { ok: true, data: { url: data.signedUrl } };
-}
-
-function sanitizeFilename(name: string) {
-  const cleaned = name
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^A-Za-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
-  return cleaned || "archivo";
 }
