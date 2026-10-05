@@ -1,4 +1,9 @@
+import { existsSync } from "node:fs";
+
 import { defineConfig, devices } from "@playwright/test";
+
+// Variables del Supabase local (`pnpm env:local`): las usan los tests y el servidor.
+if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 const port = 3000;
 const baseURL = `http://localhost:${port}`;
