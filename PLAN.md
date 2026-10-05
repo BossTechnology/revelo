@@ -318,7 +318,9 @@ Cada fase se trabaja en una rama `fase-N-…` con su PR. "Hecho cuando" es el cr
 - Todo lo de la sección 4: `/login`, callback, confirm, signout, middleware, `profiles`, `allowed_emails`, el hook "Before User Created" y el script de invitación.
 - Diseño de `/login` en claro y oscuro.
 
-**Hecho cuando:** Henry y Federico entran con Google y con enlace mágico en staging, un correo no invitado no logra entrar por ninguna de las dos vías, y los tests de la sección 10.1 pasan.
+**Hecho cuando:** Henry y Federico entran con Google en staging, una cuenta no invitada no logra entrar, y los tests de la sección 10.1 pasan (incluido el enlace mágico de punta a punta contra el stack local con Mailpit).
+
+> Ajuste (decisión de Henry, fase 1): staging no tiene SMTP propio todavía y el SMTP por defecto de Supabase solo entrega a miembros de la organización, así que el enlace mágico en staging se verifica en la Fase 6, junto con el SMTP propio. Mientras tanto, las cuentas de staging se crean con `pnpm invite … --sin-correo`.
 
 ### Fase 2: Datos y board de lectura
 - Migraciones de la sección 5 completas, con RLS, triggers e `is_member()`.
@@ -357,6 +359,7 @@ Cada fase se trabaja en una rama `fase-N-…` con su PR. "Hecho cuando" es el cr
 
 ### Fase 6: Puesta en producción
 - Migraciones a prod, dominio, SMTP propio, invitaciones reales y conectores de Federico y Henry apuntando a prod.
+- SMTP propio también en staging, y prueba del enlace mágico en staging y en prod (pendiente desde la Fase 1).
 - Backups: los diarios del plan Pro de Supabase, más un `pg_dump` semanal programado a un almacenamiento externo, y una restauración probada una vez en staging.
 - Monitoreo: logs de Vercel y alerta si el webhook o el MCP devuelven errores 5xx seguidos.
 - `RUNBOOK.md`: cómo invitar a alguien, revocar un cliente MCP, restaurar un backup y rotar secretos.
