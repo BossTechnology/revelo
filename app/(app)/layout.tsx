@@ -1,4 +1,4 @@
-import { Inbox, LayoutGrid, LogOut } from "lucide-react";
+import { Bot, Inbox, LayoutGrid, LogOut } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -66,6 +66,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <span className="ml-auto rounded bg-secondary px-1.5 font-mono text-xs text-foreground">
               {myTurn}
             </span>
+          </Link>
+          <Link
+            href="/ajustes/conexiones"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar-accent"
+          >
+            <Bot className="size-4" aria-hidden />
+            Conexiones de IA
           </Link>
         </div>
 

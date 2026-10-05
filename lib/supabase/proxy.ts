@@ -3,12 +3,17 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { supabasePublishableKey, supabaseUrl } from "./env";
 
-/** Rutas que se ven sin sesión. Todo lo demás exige haber entrado. */
-const PUBLIC_PATHS = ["/login", "/auth/"];
+/**
+ * Rutas que no exigen sesión web. El MCP y su metadata se autentican con el token OAuth de la IA
+ * (withMcpAuth responde 401 con WWW-Authenticate); todo lo demás exige haber entrado.
+ */
+const PUBLIC_PATHS = ["/login", "/auth/", "/api/mcp", "/.well-known/"];
 
 const isPublic = (pathname: string) =>
   PUBLIC_PATHS.some((p) =>
-    p.endsWith("/") ? pathname.startsWith(p) : pathname === p,
+    p.endsWith("/")
+      ? pathname.startsWith(p)
+      : pathname === p || pathname.startsWith(`${p}/`),
   );
 
 /**

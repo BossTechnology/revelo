@@ -1,18 +1,11 @@
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { fileHashes } from "@/lib/attachments/hash";
-import type { Database } from "@/lib/supabase/database.types";
-import { supabaseUrl } from "@/lib/supabase/env";
+import { finalizeAttachment } from "@/lib/attachments/finalize";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * POST /api/attachments/finalize — después de que el navegador sube el archivo a Storage:
- *  1. Con la sesión del usuario (RLS): descarga el archivo y registra el adjunto. Si no es
- *     miembro del proyecto, Storage y la tabla lo rechazan aquí.
- *  2. Calcula md5 y sha1 con node:crypto sobre los bytes reales.
- *  3. Solo el paso de escribir los hashes usa la secret key (función set_attachment_hashes,
- *     ejecutable únicamente por service_role): así ningún cliente puede declarar un hash.
+ * POST /api/attachments/finalize — después de que el navegador sube el archivo a Storage,
+ * registra el adjunto y calcula md5 y sha1 en el servidor (ver lib/attachments/finalize.ts).
  */
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as {
@@ -28,73 +21,28 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { data: task } = await supabase
-    .from("tasks")
-    .select("id, project_id")
-    .eq("id", body.taskId)
-    .single();
-  if (!task)
-    return NextResponse.json(
-      { error: "No se encontró la tarea." },
-      { status: 404 },
-    );
-  if (!body.path.startsWith(`${task.project_id}/${task.id}/`)) {
-    return NextResponse.json(
-      { error: "La ruta del archivo no corresponde a la tarea." },
-      { status: 400 },
-    );
-  }
-
-  const { data: file, error: downloadError } = await supabase.storage
-    .from("attachments")
-    .download(body.path);
-  if (downloadError || !file) {
-    return NextResponse.json(
-      { error: "No se encontró el archivo subido." },
-      { status: 404 },
-    );
-  }
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const { md5, sha1 } = fileHashes(bytes);
-
   const { data: claims } = await supabase.auth.getClaims();
-  const { data: attachment, error: insertError } = await supabase
-    .from("attachments")
-    .insert({
-      task_id: task.id,
-      storage_path: body.path,
-      filename: body.filename.slice(0, 255),
-      size_bytes: bytes.byteLength,
-      // uploaded_by y via los fija el trigger; los hashes, solo la función de servicio.
-      uploaded_by: claims?.claims.sub ?? "",
-      via: "web",
-    })
-    .select("id")
-    .single();
-  if (insertError)
-    return NextResponse.json({ error: insertError.message }, { status: 400 });
-
-  const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!secret)
+  if (!claims?.claims.sub) {
     return NextResponse.json(
-      { error: "Falta SUPABASE_SECRET_KEY en el servidor." },
-      { status: 500 },
+      { error: "Hace falta una sesión." },
+      { status: 401 },
     );
-  const admin = createAdminClient<Database>(supabaseUrl(), secret, {
-    auth: { autoRefreshToken: false, persistSession: false },
+  }
+  const result = await finalizeAttachment(supabase, {
+    userId: claims.claims.sub,
+    taskId: body.taskId,
+    path: body.path,
+    filename: body.filename,
   });
-  const { error: hashError } = await admin.rpc("set_attachment_hashes", {
-    attachment: attachment.id,
-    md5_hex: md5,
-    sha1_hex: sha1,
-  });
-  if (hashError)
-    return NextResponse.json({ error: hashError.message }, { status: 500 });
-
+  if (!result.ok)
+    return NextResponse.json(
+      { error: result.error },
+      { status: result.status },
+    );
   return NextResponse.json({
-    id: attachment.id,
-    md5,
-    sha1,
-    size: bytes.byteLength,
+    id: result.id,
+    md5: result.md5,
+    sha1: result.sha1,
+    size: result.size,
   });
 }

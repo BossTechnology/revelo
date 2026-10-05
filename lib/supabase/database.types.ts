@@ -74,6 +74,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"mcp_rate_limits": {
+                  Row: {
+                    "calls": number,"user_id": string,"window_start": string
+                  }
+                  Insert: {
+                    "calls"?: number,"user_id": string,"window_start": string
+                  }
+                  Update: {
+                    "calls"?: number,"user_id"?: string,"window_start"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mcp_rate_limits_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string,"id": string,"role": string,"turn_color": string
@@ -280,6 +299,9 @@ isOneToOne: false
                            },
 "is_member":
 { Args: { "project": string }; Returns: boolean
+                           },
+"mcp_hit":
+{ Args: { "max_calls"?: number }; Returns: boolean
                            },
 "request_via":
 { Args: Record<PropertyKey, never>; Returns: string
