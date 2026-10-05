@@ -1,21 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 
-import { signIn, waitForMagicLink } from "../support/auth";
-import { latestMessageId } from "../support/mailpit";
+import { magicLinkTokenHash, signInFast } from "../support/auth";
 import { createInvitedUser, testEmail } from "../support/supabase";
 
 /** Personas del seed local (supabase/seed.sql). */
 const HENRY = "henry@relevo.test";
 
 test.describe("proyectos y board (Fase 2)", () => {
-  // Los tests de Henry comparten buzón: en serie, para no gastarse el enlace el uno al otro.
+  // Supabase guarda un solo token de enlace por usuario: los tests que entran como Henry van en
+  // serie para que uno no invalide el enlace del otro.
   test.describe.configure({ mode: "serial" });
 
   test("Henry ve sus 3 proyectos con conteos por estado y por turno", async ({
     page,
   }) => {
-    await signIn(page, HENRY);
+    await signInFast(page, HENRY);
 
     const cards = page.getByRole("main").getByRole("listitem");
     await expect(cards).toHaveCount(3);
@@ -30,7 +30,7 @@ test.describe("proyectos y board (Fase 2)", () => {
   test("el board de BOb muestra las tres columnas y filtra por turno", async ({
     page,
   }) => {
-    await signIn(page, HENRY);
+    await signInFast(page, HENRY);
     await page.getByRole("link", { name: /BOb/ }).first().click();
     await expect(page).toHaveURL("/p/BOB");
 
@@ -69,35 +69,22 @@ test.describe("proyectos y board (Fase 2)", () => {
     await createInvitedUser(email, "Ajeno E2E");
 
     // Web
-    await signIn(page, email);
+    await signInFast(page, email);
     await expect(
       page.getByText("Aún no estás en ningún proyecto"),
     ).toBeVisible();
     const res = await page.goto("/p/BOB");
     expect(res?.status()).toBe(404);
 
-    // API directa con su propio token: el mismo enlace mágico, verificado con supabase-js.
-
+    // API directa con su propio token (sesión propia, sin pasar por la web).
     const api = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        auth: { persistSession: false },
-      },
+      { auth: { persistSession: false } },
     );
-    const previous = await latestMessageId(email);
-    const { error: sendError } = await api.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: "http://localhost:3000/auth/confirm?next=%2F",
-      },
-    });
-    expect(sendError).toBeNull();
-    const link = new URL(await waitForMagicLink(email, previous));
     const { error: otpError } = await api.auth.verifyOtp({
-      type: "email",
-      token_hash: link.searchParams.get("token_hash")!,
+      type: "magiclink",
+      token_hash: await magicLinkTokenHash(email),
     });
     expect(otpError).toBeNull();
 

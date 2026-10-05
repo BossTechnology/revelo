@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 import { latestLinkTo, latestMessageId } from "./mailpit";
+import { adminClient } from "./supabase";
 
 export const NEUTRAL_MESSAGE =
   "Si tu correo está invitado, te llegó un enlace para entrar.";
@@ -45,4 +46,26 @@ export async function signIn(page: Page, email: string) {
   const previous = await requestMagicLink(page, email);
   await openMagicLink(page, email, previous);
   await expect(page).toHaveURL("/");
+}
+
+/**
+ * Entrada rápida para los tests que no prueban el login en sí: genera el enlace con la API de
+ * admin (sin correo ni límite de frecuencia) y lo abre por /auth/confirm, como el enlace real.
+ * Los tests de login (10.1) siguen usando el flujo completo con Mailpit.
+ */
+export async function signInFast(page: Page, email: string, next = "/") {
+  const tokenHash = await magicLinkTokenHash(email);
+  await page.goto(
+    `/auth/confirm?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(next)}`,
+  );
+  await expect(page).toHaveURL(next);
+}
+
+export async function magicLinkTokenHash(email: string): Promise<string> {
+  const { data, error } = await adminClient().auth.admin.generateLink({
+    type: "magiclink",
+    email,
+  });
+  if (error) throw error;
+  return data.properties.hashed_token;
 }
