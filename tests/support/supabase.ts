@@ -16,7 +16,7 @@ export function testEmail(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@relevo.test`;
 }
 
-/** Invita como lo hace scripts/invite.ts, pero sin enviar el correo de invitación. */
+/** Invita como lo hace scripts/invite.mts, pero sin enviar el correo de invitación. */
 export async function createInvitedUser(
   email: string,
   displayName = "Persona E2E",

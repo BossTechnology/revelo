@@ -469,7 +469,7 @@ supabase/
   migrations/  tests/  seed.sql
 tests/
   unit/  integration/  e2e/  fixtures/github/
-scripts/invite.ts
+scripts/invite.mts  import-doc.mts  supabase-env.mjs
 CLAUDE.md  PLAN.md  RUNBOOK.md
 ```
 

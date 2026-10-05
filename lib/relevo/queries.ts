@@ -272,3 +272,94 @@ export async function getBoard(projectKey: string) {
 
 export type Board = NonNullable<Awaited<ReturnType<typeof getBoard>>>;
 export type BoardTask = Board["tasks"][number];
+
+export async function getTaskDetail(projectKey: string, taskKey: string) {
+  const supabase = await createClient();
+  const { data: task } = await supabase
+    .from("tasks")
+    .select(
+      `id, key, aliases, type, title, body, status, turn, turn_user_id, turn_third_party, due_date,
+       created_at, created_by, created_via, project_id, projects!inner(key)`,
+    )
+    .eq("key", taskKey)
+    .eq("projects.key", projectKey)
+    .maybeSingle();
+  if (!task) return null;
+
+  const [
+    { data: replies },
+    { data: attachments },
+    { data: events },
+    { data: links },
+  ] = await Promise.all([
+    supabase
+      .from("replies")
+      .select("id, author_id, body, mark, via, created_at")
+      .eq("task_id", task.id)
+      .order("created_at"),
+    supabase
+      .from("attachments")
+      .select(
+        "id, filename, size_bytes, md5, sha1, uploaded_by, via, created_at",
+      )
+      .eq("task_id", task.id)
+      .order("created_at"),
+    supabase
+      .from("task_events")
+      .select("id, actor_id, via, kind, from_value, to_value, created_at")
+      .eq("task_id", task.id)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("task_git_links")
+      .select(
+        "matched_in, git_events(id, kind, ref, sha, pr_number, title, state, url, occurred_at)",
+      )
+      .eq("task_id", task.id),
+  ]);
+
+  return {
+    task,
+    replies: replies ?? [],
+    attachments: attachments ?? [],
+    events: events ?? [],
+    git: (links ?? [])
+      .map((l) => l.git_events)
+      .filter((g): g is NonNullable<typeof g> => g !== null)
+      .sort((a, b) => (a.occurred_at < b.occurred_at ? 1 : -1)),
+  };
+}
+
+export type TaskDetail = NonNullable<Awaited<ReturnType<typeof getTaskDetail>>>;
+
+/** Tareas abiertas donde el turno es de `userId`, de todos los proyectos (Mi turno). */
+export async function getTurnList(userId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tasks")
+    .select(
+      `id, key, type, title, status, due_date, created_at,
+       projects!inner(key, name, color),
+       task_git_links(git_events(kind, pr_number, state, payload, occurred_at))`,
+    )
+    .eq("turn", "persona")
+    .eq("turn_user_id", userId)
+    .neq("status", "terminado")
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
+export async function getThirdPartyList() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tasks")
+    .select(
+      "id, key, title, turn_third_party, due_date, created_at, projects!inner(key, name, color)",
+    )
+    .eq("turn", "tercero")
+    .neq("status", "terminado")
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
