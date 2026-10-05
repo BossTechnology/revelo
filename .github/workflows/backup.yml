@@ -1,0 +1,41 @@
+name: backup
+
+# Backup semanal de producción (PLAN.md §9, Fase 6): pg_dump de esquema y datos guardado como
+# artifact por 90 días, además de los backups diarios del plan Pro. Restauración: RUNBOOK.md.
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.119.0
+      - name: Verificar el secreto
+        env:
+          SUPABASE_PROD_DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_PROD_DB_URL" ]; then
+            echo "::error::Falta el secreto SUPABASE_PROD_DB_URL (ver RUNBOOK.md)."
+            exit 1
+          fi
+      - name: pg_dump
+        env:
+          SUPABASE_PROD_DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: |
+          mkdir backup
+          supabase db dump --db-url "$SUPABASE_PROD_DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$SUPABASE_PROD_DB_URL" --data-only -f backup/data.sql
+          supabase db dump --db-url "$SUPABASE_PROD_DB_URL" --role-only -f backup/roles.sql
+          ls -la backup
+      - uses: actions/upload-artifact@v7
+        with:
+          name: relevo-backup
+          path: backup/
+          retention-days: 90

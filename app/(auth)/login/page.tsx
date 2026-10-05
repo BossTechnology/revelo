@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { safeNextPath } from "@/lib/auth/next-path";
 import { createClient } from "@/lib/supabase/server";
 
+import { magicLinkEnabled } from "./config";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Entrar · Relevo" };
@@ -43,7 +44,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Solo para personas invitadas.
           </p>
         </div>
-        <LoginForm next={next} error={error} />
+        <LoginForm next={next} error={error} magicLink={magicLinkEnabled()} />
       </main>
     </div>
   );

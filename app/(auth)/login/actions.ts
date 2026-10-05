@@ -1,6 +1,8 @@
 "use server";
 
 import { requestOrigin } from "@/lib/auth/origin";
+
+import { magicLinkEnabled } from "./config";
 import { safeNextPath } from "@/lib/auth/next-path";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,6 +20,9 @@ export async function sendMagicLink(
   _prev: MagicLinkState,
   formData: FormData,
 ): Promise<MagicLinkState> {
+  // Apagado en este entorno: la respuesta sigue siendo neutra, pero no se envía nada.
+  if (!magicLinkEnabled()) return { status: "sent" };
+
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();

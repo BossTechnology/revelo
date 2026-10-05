@@ -21,9 +21,12 @@ const ERROR_MESSAGES: Record<LoginError, string> = {
 export function LoginForm({
   next,
   error,
+  magicLink,
 }: {
   next: string;
   error: LoginError | null;
+  /** Enlace mágico por correo (apagado donde no hay SMTP; ver RELEVO_MAGIC_LINK). */
+  magicLink: boolean;
 }) {
   const [state, formAction, sending] = useActionState<MagicLinkState, FormData>(
     sendMagicLink,
@@ -69,48 +72,61 @@ export function LoginForm({
         </Button>
         {googleError && (
           <p role="alert" className="text-sm text-destructive">
-            No se pudo abrir el inicio de sesión con Google. Intenta con el
-            enlace por correo.
+            No se pudo abrir el inicio de sesión con Google.
+            {magicLink
+              ? " Intenta con el enlace por correo."
+              : " Intenta de nuevo."}
           </p>
         )}
 
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <Separator className="flex-1" />o con un enlace por correo
-          <Separator className="flex-1" />
-        </div>
-
-        {state.status === "sent" ? (
-          <p role="status" className="rounded-md bg-muted px-3 py-2 text-sm">
-            Si tu correo está invitado, te llegó un enlace para entrar. Revisa
-            tu bandeja.
-          </p>
-        ) : (
-          <form action={formAction} className="flex flex-col gap-3" noValidate>
-            <input type="hidden" name="next" value={next} />
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Correo</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="tu@correo.com"
-                required
-                aria-invalid={state.status === "invalid" || undefined}
-                aria-describedby={
-                  state.status === "invalid" ? "email-error" : undefined
-                }
-              />
-              {state.status === "invalid" && (
-                <p id="email-error" className="text-sm text-destructive">
-                  Escribe un correo válido.
-                </p>
-              )}
+        {magicLink && (
+          <>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <Separator className="flex-1" />o con un enlace por correo
+              <Separator className="flex-1" />
             </div>
-            <Button type="submit" disabled={sending}>
-              {sending ? "Enviando…" : "Enviarme un enlace"}
-            </Button>
-          </form>
+
+            {state.status === "sent" ? (
+              <p
+                role="status"
+                className="rounded-md bg-muted px-3 py-2 text-sm"
+              >
+                Si tu correo está invitado, te llegó un enlace para entrar.
+                Revisa tu bandeja.
+              </p>
+            ) : (
+              <form
+                action={formAction}
+                className="flex flex-col gap-3"
+                noValidate
+              >
+                <input type="hidden" name="next" value={next} />
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="email">Correo</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="tu@correo.com"
+                    required
+                    aria-invalid={state.status === "invalid" || undefined}
+                    aria-describedby={
+                      state.status === "invalid" ? "email-error" : undefined
+                    }
+                  />
+                  {state.status === "invalid" && (
+                    <p id="email-error" className="text-sm text-destructive">
+                      Escribe un correo válido.
+                    </p>
+                  )}
+                </div>
+                <Button type="submit" disabled={sending}>
+                  {sending ? "Enviando…" : "Enviarme un enlace"}
+                </Button>
+              </form>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

@@ -367,6 +367,11 @@ Cada fase se trabaja en una rama `fase-N-…` con su PR. "Hecho cuando" es el cr
 
 **Hecho cuando:** pasa una semana de uso real sin volver al Doc, y la restauración de prueba funciona.
 
+> Decisiones de Henry (Fase 6, octubre 2026):
+> - **Producción usa por ahora el Supabase de staging** (`relevo-staging`, org BOSS, plan free). `relevo-prod` en plan Pro queda para cuando haga falta: el plan free no tiene backups diarios y puede pausarse por inactividad; el backup semanal (`backup.yml`) sí corre.
+> - **Dirección:** `https://relevo-bosstechnology.vercel.app` (sin dominio propio).
+> - **Solo login con Google.** Sin SMTP propio; el enlace mágico se apaga con `RELEVO_MAGIC_LINK=off` en Vercel y sigue probado en local (10.1). Las cuentas se crean con `pnpm invite … --sin-correo`.
+
 ---
 
 ## 10. Tests
