@@ -157,11 +157,11 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:3000"
+site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = ["http://localhost:3000/**", "http://127.0.0.1:3000/**"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -174,7 +174,8 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
-enable_signup = true
+# Relevo es solo con invitación (PLAN.md §4): las cuentas las crea scripts/invite.ts.
+enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
@@ -197,7 +198,8 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 2
+# Local: alto para que los E2E puedan pedir varios enlaces seguidos a Mailpit.
+email_sent = 100
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
@@ -219,6 +221,8 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
+# Ojo: en false apaga el proveedor de correo entero (no habría enlace mágico). El registro
+# ya está cerrado con [auth] enable_signup = false.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
@@ -244,10 +248,14 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Plantillas en español. Ambas pasan por /auth/confirm (verifyOtp con token_hash).
+[auth.email.template.invite]
+subject = "Te invitaron a Relevo"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.magic_link]
+subject = "Tu enlace para entrar a Relevo"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
@@ -277,9 +285,10 @@ max_frequency = "5s"
 # inactivity_timeout = "8h"
 
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
-# [auth.hook.before_user_created]
-# enabled = true
-# uri = "pg-functions://postgres/auth/before-user-created-hook"
+# Defensa adicional al registro apagado: rechaza correos que no estén en allowed_emails.
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/hook_before_user_created"
 
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
 # [auth.hook.custom_access_token]
@@ -334,6 +343,14 @@ url = ""
 skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
+
+# Google (PLAN.md §4). En local queda apagado: Google OAuth no se automatiza en CI y se prueba
+# a mano en staging. Para probarlo en local, crear .env con las dos variables y poner enabled = true.
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = true
 
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
@@ -413,3 +430,42 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------------------
+# Staging (relevo-staging, org BOSS). `supabase config push --project-ref <ref>` aplica lo de
+# arriba con estos reemplazos. Los enlaces de los correos vuelven al origen del preview que los
+# pidió; site_url solo es el respaldo.
+# ---------------------------------------------------------------------------
+[remotes.staging]
+project_id = "gtyjlrdqafpbvnjnzjqp"
+
+[remotes.staging.auth]
+site_url = "https://relevo-git-main-bosstechnology.vercel.app"
+additional_redirect_urls = ["https://*-bosstechnology.vercel.app/**"]
+
+[remotes.staging.auth.rate_limit]
+# Con el SMTP por defecto de Supabase el límite no se puede subir.
+email_sent = 2
+
+# Lo que no es de Relevo se deja como lo trae el proyecto remoto.
+[remotes.staging.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[remotes.staging.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.staging.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.staging.storage.analytics]
+enabled = true
+max_namespaces = 10
+
+# Google en staging: client ID y secret salen de .env.staging.local (no versionado).
+[remotes.staging.auth.external.google]
+enabled = true
+skip_nonce_check = false

@@ -3,7 +3,7 @@ export default function Home() {
     <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8">
       <h1 className="text-2xl font-semibold tracking-tight">Relevo</h1>
       <p className="text-sm text-muted-foreground">
-        Fase 0: fundaciones. El login y el board llegan en las próximas fases.
+        Ya entraste. Los proyectos y el board llegan en la Fase 2.
       </p>
     </main>
   );

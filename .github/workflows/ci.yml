@@ -67,6 +67,8 @@ jobs:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: pnpm install --frozen-lockfile
       - run: supabase start -x studio,imgproxy,vector,logflare,edge-runtime,postgres-meta
+      # Escribe en .env.local la URL y las claves del Supabase local (y la URL de Mailpit).
+      - run: pnpm env:local
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm build
       - run: pnpm test:e2e
