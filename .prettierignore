@@ -9,3 +9,4 @@ test-results
 # Documentos del proyecto: se escriben a mano, Prettier no los toca.
 *.md
 docs
+lib/supabase/database.types.ts
