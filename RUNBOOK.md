@@ -54,15 +54,22 @@ Configuración de Auth: `supabase config diff --project-ref <ref>` y, si el diff
 - **Diarios:** los del plan Pro de Supabase (producción).
 - **Semanales:** el workflow `backup` (`.github/workflows/backup.yml`) corre los lunes, hace `pg_dump` (esquema y datos) y lo guarda como artifact de GitHub por 90 días. Necesita el secreto de Actions `SUPABASE_PROD_DB_URL`.
 
-Restaurar en staging (prueba obligatoria de la Fase 6, una vez):
+Restaurar (probado el 5 de octubre de 2026 con el backup de la corrida 37259365305: 12 tablas,
+22 políticas, todos los datos, 0 tablas sin RLS). Se restaura sobre una base de Supabase **limpia**
+(un proyecto nuevo, o `supabase db start` en una carpeta aparte con otros puertos):
 
 ```bash
-gh run download <run-id> -n relevo-backup -D /tmp/relevo-backup
-psql "$SUPABASE_STAGING_DB_URL" -v ON_ERROR_STOP=1 -f /tmp/relevo-backup/schema.sql
-psql "$SUPABASE_STAGING_DB_URL" -v ON_ERROR_STOP=1 -f /tmp/relevo-backup/data.sql
+gh run download <run-id> --repo BossTechnology/revelo -n relevo-backup -D /tmp/relevo-backup
+psql "$DESTINO_DB_URL" -v ON_ERROR_STOP=1 -f /tmp/relevo-backup/schema.sql
+psql "$DESTINO_DB_URL" -v ON_ERROR_STOP=1 -f /tmp/relevo-backup/data.sql
 ```
 
-Comprobar: `select count(*) from tasks;` coincide con producción y la app de staging muestra los proyectos.
+- `roles.sql` no hace falta en Supabase (los roles vienen en la imagen) y falla al fijar
+  parámetros reservados como `log_min_messages`; es solo para restaurar en un Postgres propio.
+- Fuera de Supabase el esquema no restaura: depende de `auth`, `storage`, `vault` y `extensions`.
+
+Comprobar: `select count(*) from tasks;` coincide con el origen, y la consulta del guard de RLS
+(`supabase/tests/datos.test.sql`, primer test) devuelve 0 tablas sin RLS.
 
 ## Rotar secretos
 
