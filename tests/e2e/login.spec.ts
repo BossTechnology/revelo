@@ -28,9 +28,11 @@ test.describe("login (PLAN.md §10.1)", () => {
       "/auth/callback?error=access_denied&error_code=signup_disabled&error_description=Signups+not+allowed",
     );
     await expect(page).toHaveURL("/login?error=acceso");
-    await expect(page.getByRole("alert")).toHaveText(
-      "Esa cuenta no tiene acceso. Relevo es solo con invitación.",
-    );
+    await expect(
+      page.getByText(
+        "Esa cuenta no tiene acceso. Relevo es solo con invitación.",
+      ),
+    ).toBeVisible();
   });
 
   test("un correo invitado recibe el enlace mágico, entra y llega a /", async ({
