@@ -107,3 +107,25 @@ export async function checkSuitesFor(
   );
   return check_suites;
 }
+
+/**
+ * Pregunta a GitHub si la instalación ve el repo y devuelve su nombre exacto (mayúsculas
+ * incluidas). null si no existe o la app no tiene acceso; lanza si la instalación no sirve.
+ */
+export async function installationRepo(
+  installationId: number,
+  owner: string,
+  repo: string,
+): Promise<{ owner: string; repo: string } | null> {
+  const token = await installationToken(installationId);
+  try {
+    const r = await gh<{ name: string; owner: { login: string } }>(
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      token,
+    );
+    return { owner: r.owner.login, repo: r.name };
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith("GitHub 404")) return null;
+    throw e;
+  }
+}

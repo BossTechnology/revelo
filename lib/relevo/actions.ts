@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { sanitizeFilename } from "@/lib/attachments/finalize";
+import { installationRepo } from "@/lib/github/app";
+import { parseRepoInput } from "@/lib/github/repo-input";
 import { createClient } from "@/lib/supabase/server";
 
 import type { TaskStatus, TaskType } from "./domain";
@@ -341,22 +343,43 @@ export async function connectRepo(input: {
   fullName: string;
   installationId: number;
 }): Promise<ActionResult> {
-  const match = input.fullName
-    .trim()
-    .match(/^([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/);
-  if (!match)
-    return { ok: false, error: "Escribe el repo como organizacion/repo." };
+  const parsed = parseRepoInput(input.fullName);
+  if (!parsed)
+    return {
+      ok: false,
+      error: "Escribe el repo como organizacion/repo o pega su URL de GitHub.",
+    };
   if (!Number.isInteger(input.installationId) || input.installationId <= 0) {
     return {
       ok: false,
       error: "Falta el número de instalación de la GitHub App.",
     };
   }
+  let { owner, repo } = parsed;
+  // Con la app configurada, GitHub confirma que la instalación ve el repo y da su nombre exacto.
+  if (process.env.GITHUB_APP_ID && process.env.GITHUB_APP_PRIVATE_KEY) {
+    try {
+      const found = await installationRepo(input.installationId, owner, repo);
+      if (!found)
+        return {
+          ok: false,
+          error: `La GitHub App no ve ${owner}/${repo}. Revisa el nombre o dale acceso a ese repo en la instalación.`,
+        };
+      ({ owner, repo } = found);
+    } catch (e) {
+      console.error("[connect-repo]", e);
+      return {
+        ok: false,
+        error:
+          "Ese número de instalación no es de la GitHub App de Relevo. Instálala desde el botón de arriba.",
+      };
+    }
+  }
   const supabase = await createClient();
   const { error } = await supabase.from("project_repos").insert({
     project_id: input.projectId,
-    owner: match[1]!,
-    repo: match[2]!,
+    owner,
+    repo,
     installation_id: input.installationId,
   });
   if (error) {

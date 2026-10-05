@@ -161,11 +161,11 @@ export function ConnectRepo({
       }}
     >
       <div className="flex min-w-56 flex-1 flex-col gap-1.5">
-        <Label htmlFor="repo-name">Repo (organización/repo)</Label>
+        <Label htmlFor="repo-name">Repo (organización/repo o URL)</Label>
         <Input
           id="repo-name"
           name="repo"
-          placeholder="BossTechnology/Bob-New"
+          placeholder="BossTechnology/BOb-engine"
           required
           className="font-mono"
         />
