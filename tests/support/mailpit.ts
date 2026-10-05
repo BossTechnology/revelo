@@ -16,10 +16,22 @@ export async function messagesTo(email: string): Promise<Summary[]> {
   return body.messages;
 }
 
-/** Primer enlace del último correo recibido por `email`, o null si no ha llegado. */
-export async function latestLinkTo(email: string): Promise<string | null> {
+/** ID del último correo recibido por `email` (para esperar uno más nuevo). */
+export async function latestMessageId(email: string): Promise<string | null> {
   const [latest] = await messagesTo(email);
-  if (!latest) return null;
+  return latest?.ID ?? null;
+}
+
+/**
+ * Primer enlace del último correo recibido por `email`, o null si no ha llegado. Con
+ * `newerThan`, ignora ese correo: los enlaces sirven una sola vez y no hay que reusar uno viejo.
+ */
+export async function latestLinkTo(
+  email: string,
+  newerThan?: string | null,
+): Promise<string | null> {
+  const [latest] = await messagesTo(email);
+  if (!latest || latest.ID === newerThan) return null;
   const res = await fetch(`${base()}/api/v1/message/${latest.ID}`);
   const message = (await res.json()) as { HTML: string };
   const href = message.HTML.match(/href="([^"]+)"/)?.[1];

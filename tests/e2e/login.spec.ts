@@ -1,23 +1,8 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { latestLinkTo, messagesTo } from "../support/mailpit";
+import { openMagicLink, requestMagicLink } from "../support/auth";
+import { messagesTo } from "../support/mailpit";
 import { createInvitedUser, testEmail, userExists } from "../support/supabase";
-
-const NEUTRAL = "Si tu correo está invitado, te llegó un enlace para entrar.";
-
-async function requestMagicLink(page: Page, email: string) {
-  await page.getByLabel("Correo").fill(email);
-  await page.getByRole("button", { name: "Enviarme un enlace" }).click();
-  await expect(page.getByRole("status")).toContainText(NEUTRAL);
-}
-
-async function openMagicLink(page: Page, email: string) {
-  let link: string | null = null;
-  await expect
-    .poll(async () => (link = await latestLinkTo(email)), { timeout: 15_000 })
-    .not.toBeNull();
-  await page.goto(link!);
-}
 
 test.describe("login (PLAN.md §10.1)", () => {
   test("si Supabase rechaza la cuenta de Google, /login lo explica sin revelar más", async ({
@@ -42,8 +27,8 @@ test.describe("login (PLAN.md §10.1)", () => {
     await createInvitedUser(email, "Henry E2E");
 
     await page.goto("/login");
-    await requestMagicLink(page, email);
-    await openMagicLink(page, email);
+    const previous = await requestMagicLink(page, email);
+    await openMagicLink(page, email, previous);
 
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Henry E2E")).toBeVisible();
@@ -72,8 +57,8 @@ test.describe("login (PLAN.md §10.1)", () => {
     await page.goto("/?desde=e2e");
     await expect(page).toHaveURL(/\/login\?next=%2F%3Fdesde%3De2e$/);
 
-    await requestMagicLink(page, email);
-    await openMagicLink(page, email);
+    const previous = await requestMagicLink(page, email);
+    await openMagicLink(page, email, previous);
     await expect(page).toHaveURL("/?desde=e2e");
   });
 
@@ -85,8 +70,8 @@ test.describe("login (PLAN.md §10.1)", () => {
     await createInvitedUser(email);
 
     await page.goto("/login");
-    await requestMagicLink(page, email);
-    await openMagicLink(page, email);
+    const previous = await requestMagicLink(page, email);
+    await openMagicLink(page, email, previous);
     await expect(page).toHaveURL("/");
 
     const authCookies = async () =>
