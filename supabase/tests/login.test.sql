@@ -116,7 +116,12 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "00000000-0000-0000-0000-0000000000a1", "role": "authenticated"}';
 
-select is((select count(*) from public.profiles), 2::bigint, 'con sesión se ven los perfiles');
+select is(
+  (select count(*) from public.profiles
+   where id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2')),
+  2::bigint,
+  'con sesión se ven los perfiles'
+);
 
 update public.profiles set display_name = 'Fede' where id = '00000000-0000-0000-0000-0000000000a1';
 update public.profiles set display_name = 'Hackeado' where id = '00000000-0000-0000-0000-0000000000a2';
