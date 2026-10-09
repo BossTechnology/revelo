@@ -24,7 +24,7 @@ Abrir esta carpeta con Claude Code y usar el prompt de la sección 15 de `PLAN.m
 
 ## Conectar las IAs (MCP)
 
-URL del servidor MCP: `https://relevo-bosstechnology.vercel.app/api/mcp` (hasta la Fase 6 usa el Supabase de staging).
+URL del servidor MCP: `https://relevo-bosstechnology.vercel.app/api/mcp` (producción usa por ahora el proyecto de Supabase `relevo-staging`; ver las decisiones de la Fase 6 en `PLAN.md`).
 
 - **Claude (web, desktop, Cowork):** Ajustes → Conectores → Agregar conector personalizado → pegar la URL. Claude se registra solo y abre `/oauth/consent` para que apruebes.
 - **Claude Code:** `claude mcp add --transport http relevo https://relevo-bosstechnology.vercel.app/api/mcp` y luego `/mcp` para autenticarse.

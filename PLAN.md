@@ -81,11 +81,11 @@ MCP_RESOURCE_URL=                 # https://relevo.<dominio>/api/mcp
 
 ### Configuración externa (checklist)
 
-- [ ] Google Cloud: crear el cliente OAuth "Web". Redirect URI autorizado: `https://<ref>.supabase.co/auth/v1/callback`. La pantalla de consentimiento puede quedar en modo "Testing" con los correos de Henry y Federico como usuarios de prueba.
-- [ ] Supabase Auth → Providers → Google: client ID y secret.
-- [ ] Supabase Auth → URL Configuration: Site URL = dominio de producción. Redirect URLs adicionales: `http://localhost:3000/**` y el patrón de previews de Vercel.
-- [ ] Plantilla del correo de enlace mágico en español, apuntando a `/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
-- [ ] SMTP propio (Resend u otro) para producción. El SMTP por defecto de Supabase tiene un límite de envíos muy bajo.
+- [x] Google Cloud: crear el cliente OAuth "Web". Redirect URI autorizado: `https://<ref>.supabase.co/auth/v1/callback`. La pantalla de consentimiento puede quedar en modo "Testing" con los correos de Henry y Federico como usuarios de prueba.
+- [x] Supabase Auth → Providers → Google: client ID y secret.
+- [x] Supabase Auth → URL Configuration: Site URL = dominio de producción. Redirect URLs adicionales: `http://localhost:3000/**` y el patrón de previews de Vercel.
+- [x] Plantilla del correo de enlace mágico en español, apuntando a `/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
+- [ ] SMTP propio (Resend u otro) para producción. El SMTP por defecto de Supabase tiene un límite de envíos muy bajo. *Pospuesto: en la Fase 6 se decidió entrar solo con Google (ver decisiones de la Fase 6).*
 
 ---
 
@@ -444,14 +444,14 @@ Si algún paso necesitó copiar y pegar entre ellos, el MVP no está listo.
 
 ## 12. Seguridad (checklist de release)
 
-- [ ] `SUPABASE_SECRET_KEY` solo en funciones de servidor (webhook, cron, script de invitación). Nunca en el MCP ni en el cliente.
-- [ ] Webhook con firma verificada e idempotencia.
-- [ ] Storage privado, URLs firmadas de 5 minutos, límite de 50 MB, nombres de archivo saneados.
-- [ ] Encabezados: CSP, `X-Frame-Options: DENY` (excepto lo que necesite la pantalla de consentimiento), HSTS.
-- [ ] Clientes MCP revocables desde `/ajustes/conexiones`.
-- [ ] Rate limit en `/api/mcp` y en el envío de enlaces mágicos.
-- [ ] Secretos rotables documentados en `RUNBOOK.md`.
-- [ ] Revisión de RLS con el advisor de seguridad de Supabase sin alertas.
+- [x] `SUPABASE_SECRET_KEY` solo en funciones de servidor (webhook, cron, script de invitación). Nunca en el MCP ni en el cliente.
+- [x] Webhook con firma verificada e idempotencia.
+- [x] Storage privado, URLs firmadas de 5 minutos, límite de 50 MB, nombres de archivo saneados.
+- [x] Encabezados: CSP, `X-Frame-Options: DENY` (excepto lo que necesite la pantalla de consentimiento), HSTS.
+- [x] Clientes MCP revocables desde `/ajustes/conexiones`.
+- [x] Rate limit en `/api/mcp` y en el envío de enlaces mágicos.
+- [x] Secretos rotables documentados en `RUNBOOK.md`.
+- [x] Revisión de RLS con el advisor de seguridad de Supabase sin alertas. *Revisado el 8 de octubre de 2026: ninguna tabla sin RLS. Quedan 5 avisos aceptados: `create_project`, `is_member`, `task_project` y `mcp_hit` son `SECURITY DEFINER` ejecutables por `authenticated` a propósito (las políticas y el MCP las llaman como el usuario), y la protección de contraseñas filtradas no aplica porque solo se entra con Google.*
 
 ---
 

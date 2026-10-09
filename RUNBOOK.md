@@ -5,8 +5,8 @@ Tareas de operación que se repiten. Cada una dice qué correr y cómo comprobar
 | Entorno | App | Supabase |
 |---|---|---|
 | Local | `pnpm dev` | `supabase start` (puertos 553xx, Mailpit en http://127.0.0.1:55324) |
-| Staging | Previews de Vercel y, hasta la Fase 6, `relevo-bosstechnology.vercel.app` | `relevo-staging` (`gtyjlrdqafpbvnjnzjqp`, org BOSS) |
-| Producción | Dominio propio (Fase 6) | `relevo-prod` (plan Pro, Fase 6) |
+| Producción | `relevo-bosstechnology.vercel.app` y los previews de Vercel | `relevo-staging` (`gtyjlrdqafpbvnjnzjqp`, org BOSS, plan free) |
+| Producción futura | — | `relevo-prod` en plan Pro, cuando se decida (backups diarios y sin pausa por inactividad) |
 
 Las credenciales de staging viven en `.env.staging.local` (no se versiona). Nunca se pegan en un chat ni en un issue.
 
@@ -17,11 +17,11 @@ Las credenciales de staging viven en `.env.staging.local` (no se versiona). Nunc
 Solo entra quien está en `allowed_emails` y tiene cuenta (PLAN.md §4).
 
 ```bash
-# Con correo de invitación (necesita SMTP en el entorno):
+# Con correo de invitación (necesita SMTP; hoy no hay, así que en producción se usa --sin-correo):
 NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SECRET_KEY=<secret> \
   node scripts/invite.mts persona@boss.technology --nombre "Nombre" --rol arquitectura --sitio https://<app>
 
-# Sin correo (entra con Google o pidiendo el enlace mágico):
+# Sin correo (entra con Google; el enlace mágico está apagado en producción con RELEVO_MAGIC_LINK=off):
 … node scripts/invite.mts persona@boss.technology --nombre "Nombre" --rol desarrollo --sin-correo
 ```
 
@@ -51,7 +51,7 @@ Configuración de Auth: `supabase config diff --project-ref <ref>` y, si el diff
 
 ## Backups y restauración
 
-- **Diarios:** los del plan Pro de Supabase (producción).
+- **Diarios:** ninguno por ahora. El plan free no los tiene; llegan con `relevo-prod` en plan Pro.
 - **Semanales:** el workflow `backup` (`.github/workflows/backup.yml`) corre los lunes, hace `pg_dump` (esquema y datos) y lo guarda como artifact de GitHub por 90 días. Necesita el secreto de Actions `SUPABASE_PROD_DB_URL`.
 
 Restaurar (probado el 5 de octubre de 2026 con el backup de la corrida 37259365305: 12 tablas,
