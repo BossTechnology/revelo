@@ -51,10 +51,9 @@ insert into public.projects (id, name, key, color, next_number, company_id) valu
 
 insert into public.categories (project_id, name, position) values
   ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT.Cafe', 0),
-  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'Fly.io', 1),
-  ('aaaaaaaa-0000-4000-8000-0000000007b7', '3 Chains', 2),
-  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Admin', 3),
-  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Content', 4);
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', '3 Chains', 1),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Admin', 2),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Content', 3);
 
 insert into public.project_members (project_id, user_id)
 select p.id, u.id
