@@ -43,7 +43,7 @@ export const getSidebar = cache(async () => {
   const [{ data: projects }, { data: open }] = await Promise.all([
     supabase
       .from("projects")
-      .select("id, name, key, color")
+      .select("id, name, key, color, companies(id, name)")
       .is("archived_at", null)
       .order("name"),
     supabase
@@ -57,14 +57,51 @@ export const getSidebar = cache(async () => {
     openByProject.set(t.project_id, (openByProject.get(t.project_id) ?? 0) + 1);
     if (t.turn === "persona" && t.turn_user_id === viewer?.userId) myTurn++;
   }
+  const list = (projects ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    key: p.key,
+    color: p.color,
+    open: openByProject.get(p.id) ?? 0,
+  }));
   return {
-    projects: (projects ?? []).map((p) => ({
-      ...p,
-      open: openByProject.get(p.id) ?? 0,
-    })),
+    projects: list,
+    companies: groupByCompany(projects ?? [], list),
     myTurn,
   };
 });
+
+/**
+ * Agrupa por empresa (Fase 7), en orden alfabético de empresa y conservando el orden de los
+ * proyectos dentro de cada una.
+ */
+function groupByCompany<T extends { id: string }>(
+  rows: { id: string; companies: { id: string; name: string } }[],
+  items: T[],
+): { id: string; name: string; projects: T[] }[] {
+  const companyOf = new Map(rows.map((r) => [r.id, r.companies]));
+  const groups = new Map<string, { id: string; name: string; projects: T[] }>();
+  for (const item of items) {
+    const company = companyOf.get(item.id);
+    if (!company) continue;
+    const group = groups.get(company.id) ?? { ...company, projects: [] };
+    group.projects.push(item);
+    groups.set(company.id, group);
+  }
+  return [...groups.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, "es"),
+  );
+}
+
+/** Empresas que ve la persona: las sugiere el diálogo de nuevo proyecto. */
+export async function getCompanies() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("companies")
+    .select("id, name")
+    .order("name");
+  return data ?? [];
+}
 
 type ActivityRow = { at: string; text: string };
 
@@ -150,14 +187,14 @@ export async function getProjectsOverview() {
   const { data: projects } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, project_repos(owner, repo), tasks(status, turn, turn_user_id)",
+      "id, name, key, color, companies(id, name), project_repos(owner, repo), tasks(status, turn, turn_user_id)",
     )
     .is("archived_at", null)
     .order("name");
   const list = projects ?? [];
   const activity = await lastActivity(list.map((p) => p.id));
 
-  return list.map((p) => {
+  const overview = list.map((p) => {
     const byStatus: Record<TaskStatus, number> = {
       por_hacer: 0,
       en_proceso: 0,
@@ -189,6 +226,7 @@ export async function getProjectsOverview() {
       lastActivity: activity.get(p.id)?.text ?? null,
     };
   });
+  return { projects: overview, companies: groupByCompany(list, overview) };
 }
 
 export async function getBoard(projectKey: string) {
@@ -196,7 +234,7 @@ export async function getBoard(projectKey: string) {
   const { data: project } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, project_repos(owner, repo), project_members(user_id)",
+      "id, name, key, color, companies(name), project_repos(owner, repo), project_members(user_id), categories(id, name, position, archived_at)",
     )
     .eq("key", projectKey)
     .maybeSingle();
@@ -206,7 +244,7 @@ export async function getBoard(projectKey: string) {
     .from("tasks")
     .select(
       `id, key, aliases, type, title, status, turn, turn_user_id, turn_third_party, due_date, created_at, updated_at,
-       replies(count), attachments(count),
+       category_id, replies(count), attachments(count),
        task_git_links(git_events(kind, ref, pr_number, state, payload, occurred_at))`,
     )
     .eq("project_id", project.id)
@@ -220,8 +258,10 @@ export async function getBoard(projectKey: string) {
       name: project.name,
       key: project.key,
       color: project.color,
+      company: project.companies.name,
       repos: project.project_repos.map((r) => `${r.owner}/${r.repo}`),
       memberIds: project.project_members.map((m) => m.user_id),
+      categories: sortCategories(project.categories),
       lastActivity: activity.get(project.id)?.text ?? null,
     },
     tasks: (tasks ?? []).map((t) => {
@@ -247,6 +287,7 @@ export async function getBoard(projectKey: string) {
         turn_third_party: t.turn_third_party,
         dueDate: t.due_date,
         createdAt: t.created_at,
+        categoryId: t.category_id,
         replies: t.replies[0]?.count ?? 0,
         attachments: t.attachments[0]?.count ?? 0,
         git: pr
@@ -270,6 +311,23 @@ export async function getBoard(projectKey: string) {
   };
 }
 
+export type Category = {
+  id: string;
+  name: string;
+  position: number;
+  archived_at: string | null;
+};
+
+/** Activas primero (por posición), las archivadas al final. */
+function sortCategories(list: Category[]) {
+  return [...list].sort(
+    (a, b) =>
+      Number(a.archived_at !== null) - Number(b.archived_at !== null) ||
+      a.position - b.position ||
+      a.name.localeCompare(b.name, "es"),
+  );
+}
+
 export type Board = NonNullable<Awaited<ReturnType<typeof getBoard>>>;
 export type BoardTask = Board["tasks"][number];
 
@@ -279,7 +337,8 @@ export async function getTaskDetail(projectKey: string, taskKey: string) {
     .from("tasks")
     .select(
       `id, key, aliases, type, title, body, status, turn, turn_user_id, turn_third_party, due_date,
-       created_at, created_by, created_via, project_id, projects!inner(key)`,
+       created_at, created_by, created_via, project_id, category_id,
+       projects!inner(key, categories(id, name, position, archived_at))`,
     )
     .eq("key", taskKey)
     .eq("projects.key", projectKey)
@@ -320,6 +379,7 @@ export async function getTaskDetail(projectKey: string, taskKey: string) {
 
   return {
     task,
+    categories: sortCategories(task.projects.categories),
     replies: replies ?? [],
     attachments: attachments ?? [],
     events: events ?? [],

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { adminClient } from "../support/supabase";
+import { createCompany } from "../support/team";
 
 /**
  * PLAN.md §10.2: dos inserts concurrentes en el mismo proyecto obtienen números distintos y
@@ -16,7 +17,12 @@ test("numeración: inserts concurrentes reciben números distintos y consecutivo
     .replace(/[^A-Z]/g, "X")}`;
   const { data: project, error } = await admin
     .from("projects")
-    .insert({ name: `Concurrencia ${key}`, key, color: "#000000" })
+    .insert({
+      name: `Concurrencia ${key}`,
+      key,
+      color: "#000000",
+      company_id: await createCompany(`Empresa ${key}`),
+    })
     .select("id")
     .single();
   expect(error).toBeNull();

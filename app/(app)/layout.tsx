@@ -20,7 +20,7 @@ const ROLE_LABEL: Record<string, string> = {
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
-  const { projects, myTurn } = await getSidebar();
+  const { projects, companies, myTurn } = await getSidebar();
   const name = viewer.me?.display_name ?? viewer.email ?? "Tú";
 
   return (
@@ -76,30 +76,34 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-1 text-sm">
-          <div className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Proyectos
-          </div>
+        <div className="flex flex-col gap-4 text-sm">
           {projects.length === 0 && (
             <p className="px-2 text-xs text-muted-foreground">
-              Ninguno todavía.
+              Ningún proyecto todavía.
             </p>
           )}
-          {projects.map((p) => (
-            <Link
-              key={p.id}
-              href={`/p/${p.key}`}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar-accent"
-            >
-              <ProjectMark name={p.name} color={p.color} size="sm" />
-              {p.name}
-              <span
-                className="ml-auto font-mono text-xs text-muted-foreground"
-                aria-label={`${p.open} abiertas`}
-              >
-                {p.open}
-              </span>
-            </Link>
+          {companies.map((company) => (
+            <div key={company.id} className="flex flex-col gap-1">
+              <div className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {company.name}
+              </div>
+              {company.projects.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/p/${p.key}`}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar-accent"
+                >
+                  <ProjectMark name={p.name} color={p.color} size="sm" />
+                  {p.name}
+                  <span
+                    className="ml-auto font-mono text-xs text-muted-foreground"
+                    aria-label={`${p.open} abiertas`}
+                  >
+                    {p.open}
+                  </span>
+                </Link>
+              ))}
+            </div>
           ))}
         </div>
 

@@ -16,6 +16,7 @@
  *       "turno": "f@boss.technology", // correo de una persona, o "tercero:platform team"
  *       "estado": "por_hacer",        // opcional: por_hacer | en_proceso
  *       "fecha_limite": "2026-10-20", // opcional
+ *       "categoria": "TBT Admin",     // opcional: nombre de una categoría del proyecto
  *       "creado": "2026-09-07"        // opcional: fecha original en el Doc
  *     }
  *   ]
@@ -42,6 +43,7 @@ type Item = {
   estado?: "por_hacer" | "en_proceso";
   fecha_limite?: string;
   creado?: string;
+  categoria?: string;
 };
 
 function fail(message: string): never {
@@ -68,6 +70,9 @@ const items = JSON.parse(readFileSync(file, "utf8")) as Item[];
 if (!Array.isArray(items)) fail("El archivo debe ser una lista de pendientes.");
 
 const { data: projects } = await admin.from("projects").select("id, key");
+const { data: categories } = await admin
+  .from("categories")
+  .select("id, project_id, name");
 const { data: users } = await admin.auth.admin.listUsers({ perPage: 1000 });
 const userByEmail = new Map(
   (users?.users ?? []).map((u) => [u.email?.toLowerCase(), u.id]),
@@ -100,6 +105,18 @@ for (const [i, item] of items.entries()) {
   if (turn.turn === "persona" && !turn.turn_user_id)
     fail(`${where}: ${item.turno} no está invitado en este entorno.`);
 
+  const category = item.categoria
+    ? (categories ?? []).find(
+        (c) =>
+          c.project_id === project.id &&
+          c.name.toLowerCase() === item.categoria!.trim().toLowerCase(),
+      )
+    : null;
+  if (item.categoria && !category)
+    fail(
+      `${where}: el proyecto ${project.key} no tiene la categoría ${item.categoria}.`,
+    );
+
   // Ya cargada: mismo alias, o (sin alias) mismo título en el proyecto.
   {
     const query = admin
@@ -130,6 +147,7 @@ for (const [i, item] of items.entries()) {
     body: item.cuerpo ?? "",
     status: (item.estado ?? "por_hacer") as "por_hacer" | "en_proceso",
     due_date: item.fecha_limite ?? null,
+    category_id: category?.id ?? null,
     created_by: turn.turn_user_id ?? fallbackCreator,
     created_via: "web",
     created_at: createdAt,
@@ -139,7 +157,7 @@ for (const [i, item] of items.entries()) {
 
   if (!values.aplicar) {
     console.log(
-      `→ ${where}: ${project.key} · ${row.type} · turno ${item.turno}`,
+      `→ ${where}: ${project.key}${category ? ` · ${category.name}` : ""} · ${row.type} · turno ${item.turno}`,
     );
     continue;
   }

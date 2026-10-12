@@ -372,6 +372,16 @@ Cada fase se trabaja en una rama `fase-N-…` con su PR. "Hecho cuando" es el cr
 > - **Dirección:** `https://relevo-bosstechnology.vercel.app` (sin dominio propio).
 > - **Solo login con Google.** Sin SMTP propio; el enlace mágico se apaga con `RELEVO_MAGIC_LINK=off` en Vercel y sigue probado en local (10.1). Las cuentas se crean con `pnpm invite … --sin-correo`.
 
+### Fase 7: Empresas y categorías
+Relevo deja de ser solo de Boss: Henry y Federico coordinan también Fuerza de Fuerza (proyecto TBT) y Pinch (proyecto JobRun). Decisión en `docs/adr/0001-empresas-y-categorias.md`.
+- **Empresa:** agrupa proyectos (Boss, Fuerza de Fuerza, Pinch). Todo proyecto pertenece a una. La barra lateral y la vista de proyectos se agrupan por empresa. Una empresa se ve si eres miembro de al menos uno de sus proyectos; se crea al crear su primer proyecto (`create_project` recibe el nombre de la empresa).
+- **Categoría:** subdivide un proyecto (las pestañas del Doc de TBT: TBT.Cafe, Fly.io, 3 Chains, TBT Admin, TBT Content). Es opcional: un proyecto sin categorías funciona igual que antes. Cada tarea tiene como máximo una, siempre de su mismo proyecto (lo garantiza la base con una llave foránea compuesta). Las categorías se crean, renombran y archivan desde los ajustes del proyecto; no se borran.
+- **Tablero:** filtro por categoría además del filtro por turno, y la categoría visible en la tarjeta y en el detalle. Cambiar la categoría queda en el historial.
+- **MCP:** `crear_tarea` acepta `categoria`; `ver_board`, `ver_tarea` y `resumen_proyecto` la muestran.
+- **Datos:** la migración crea la empresa Boss y le asigna los proyectos actuales. TBT (Fuerza de Fuerza) y JobRun (Pinch) se crean desde la web. El historial del Doc de TBT se importa con respuestas y adjuntos, cada sección en la categoría de su pestaña.
+
+**Hecho cuando:** los proyectos aparecen agrupados por empresa; TBT tiene sus 5 categorías con el historial del Doc importado; el tablero filtra por categoría; una tarea no puede quedar con la categoría de otro proyecto (test de base de datos); un usuario no ve empresas ni categorías de proyectos donde no es miembro; y los tests pasan.
+
 ---
 
 ## 10. Tests

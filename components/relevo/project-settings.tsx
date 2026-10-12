@@ -1,6 +1,6 @@
 "use client";
 
-import { BookMarked, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, BookMarked, Tag, Trash2 } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import {
   addProjectMember,
   connectRepo,
+  createCategory,
   disconnectRepo,
+  updateCategory,
   updateProjectSettings,
 } from "@/lib/relevo/actions";
 
@@ -220,5 +222,122 @@ export function RepoRow({
         <Trash2 className="size-4" aria-hidden />
       </Button>
     </li>
+  );
+}
+
+/** Categorías (Fase 7): se agregan, renombran y archivan; no se borran. */
+export function CategoryList({
+  ctx,
+  categories,
+}: {
+  ctx: Ctx;
+  categories: { id: string; name: string; archived: boolean }[];
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      {categories.length > 0 && (
+        <ul className="flex flex-col divide-y rounded-lg border bg-card">
+          {categories.map((c) => (
+            <CategoryRow key={c.id} ctx={ctx} category={c} />
+          ))}
+        </ul>
+      )}
+      <NewCategory ctx={ctx} />
+    </div>
+  );
+}
+
+function CategoryRow({
+  ctx,
+  category,
+}: {
+  ctx: Ctx;
+  category: { id: string; name: string; archived: boolean };
+}) {
+  const [pending, run] = useRun();
+  return (
+    <li className="flex items-center gap-2 px-3 py-2">
+      <Tag className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <form
+        className="flex flex-1 items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const name = String(new FormData(e.currentTarget).get("name") ?? "");
+          if (name.trim() === category.name) return;
+          run(
+            () => updateCategory({ ...ctx, categoryId: category.id, name }),
+            "Categoría renombrada",
+          );
+        }}
+      >
+        <Input
+          name="name"
+          aria-label={`Nombre de la categoría ${category.name}`}
+          defaultValue={category.name}
+          disabled={pending}
+          className={category.archived ? "text-muted-foreground" : undefined}
+        />
+        <Button type="submit" size="sm" variant="secondary" disabled={pending}>
+          Guardar
+        </Button>
+      </form>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        disabled={pending}
+        aria-label={`${category.archived ? "Reactivar" : "Archivar"} ${category.name}`}
+        title={category.archived ? "Reactivar" : "Archivar"}
+        onClick={() =>
+          run(
+            () =>
+              updateCategory({
+                ...ctx,
+                categoryId: category.id,
+                archived: !category.archived,
+              }),
+            category.archived ? "Categoría reactivada" : "Categoría archivada",
+          )
+        }
+      >
+        {category.archived ? (
+          <ArchiveRestore className="size-4" aria-hidden />
+        ) : (
+          <Archive className="size-4" aria-hidden />
+        )}
+      </Button>
+    </li>
+  );
+}
+
+function NewCategory({ ctx }: { ctx: Ctx }) {
+  const [pending, run] = useRun();
+  return (
+    <form
+      className="flex flex-wrap items-end gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const name = String(new FormData(form).get("name") ?? "");
+        run(
+          () => createCategory({ ...ctx, name }),
+          "Categoría creada",
+          () => form.reset(),
+        );
+      }}
+    >
+      <div className="flex min-w-56 flex-1 flex-col gap-1.5">
+        <Label htmlFor="category-name">Nueva categoría</Label>
+        <Input
+          id="category-name"
+          name="name"
+          required
+          placeholder="TBT Admin"
+        />
+      </div>
+      <Button type="submit" disabled={pending}>
+        Agregar
+      </Button>
+    </form>
   );
 }

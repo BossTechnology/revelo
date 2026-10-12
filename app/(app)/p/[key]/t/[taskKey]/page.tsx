@@ -12,6 +12,7 @@ import {
   BodyEditor,
   CopyButton,
   DownloadButton,
+  CategorySelect,
   DueDateField,
   ReplyForm,
   ReplyMark,
@@ -42,6 +43,8 @@ const EVENT_TEXT: Record<
     `marcó una respuesta como ${to === "firmada" ? "decisión firmada" : to === "oficial" ? "respuesta oficial" : "normal"}`,
   adjunto: (_, to) => `adjuntó ${to ?? "un archivo"}`,
   git_vinculado: (_, to) => `vinculó actividad de Git ${to ?? ""}`,
+  categoria: (from, to) =>
+    to ? `movió a la categoría ${to}` : `quitó la categoría ${from ?? ""}`,
 };
 
 function statusName(s: string | null) {
@@ -79,7 +82,7 @@ export default async function TaskPanel({
   ]);
   if (!viewer || !detail || !board) notFound();
 
-  const { task, replies, attachments, events, git } = detail;
+  const { task, categories, replies, attachments, events, git } = detail;
   const ctx = { taskId: task.id, projectKey };
   const name = (id: string | null) =>
     id ? (viewer.profiles.get(id)?.display_name ?? "Alguien") : "Sistema";
@@ -145,6 +148,17 @@ export default async function TaskPanel({
             closed={task.status === "terminado"}
           />
           <DueDateField ctx={ctx} due={task.due_date} />
+          {categories.length > 0 && (
+            <CategorySelect
+              ctx={ctx}
+              current={task.category_id}
+              categories={categories.map((c) => ({
+                id: c.id,
+                name: c.name,
+                archived: c.archived_at !== null,
+              }))}
+            />
+          )}
         </div>
 
         <Section title="Instrucciones">

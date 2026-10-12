@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import {
+  matchesCategory,
   matchesFilter,
   type CardView,
 } from "@/components/relevo/board/board-columns";
@@ -11,33 +12,60 @@ import { cn } from "@/lib/utils";
 
 type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
 
+/**
+ * Chips de filtro del tablero. Hay dos grupos que se combinan: por turno (`?filtro=`) y, si el
+ * proyecto tiene categorías, por categoría (`?categoria=`). Cada chip cuenta las tarjetas que
+ * quedarían visibles con el otro filtro tal como está.
+ */
 export function FilterBar({
+  kind,
   filters,
   cards,
   me,
 }: {
+  kind: "turno" | "categoria";
   filters: { value: string; label: string; color: string | null }[];
   cards: CardView[];
   me: string;
 }) {
   const pathname = usePathname();
-  const active = useSearchParams().get("filtro") ?? "todo";
+  const params = useSearchParams();
+  const param = kind === "turno" ? "filtro" : "categoria";
+  const fallback = kind === "turno" ? "todo" : "todas";
+  const active = params.get(param) ?? fallback;
+  const turn = params.get("filtro") ?? "todo";
+  const category = params.get("categoria") ?? "todas";
+
+  function href(value: string) {
+    const next = new URLSearchParams(params);
+    if (value === fallback) next.delete(param);
+    else next.set(param, value);
+    const query = next.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }
+
+  function count(value: string) {
+    return cards.filter((c) =>
+      kind === "turno"
+        ? matchesFilter(c, value, me) && matchesCategory(c, category)
+        : matchesCategory(c, value) && matchesFilter(c, turn, me),
+    ).length;
+  }
 
   return (
     <div
       className="flex flex-wrap items-center gap-2"
       role="group"
-      aria-label="Filtrar por turno"
+      aria-label={
+        kind === "turno" ? "Filtrar por turno" : "Filtrar por categoría"
+      }
     >
       {filters.map((f) => {
         const isActive = active === f.value;
-        const n = cards.filter((c) => matchesFilter(c, f.value, me)).length;
         return (
           <Link
             key={f.value}
-            href={
-              f.value === "todo" ? pathname : `${pathname}?filtro=${f.value}`
-            }
+            href={href(f.value)}
             scroll={false}
             aria-current={isActive ? "page" : undefined}
             style={f.color ? ({ "--turn": f.color } as CSSVars) : undefined}
@@ -55,7 +83,9 @@ export function FilterBar({
               />
             )}
             {f.label}
-            <span className="font-mono text-xs opacity-70">{n}</span>
+            <span className="font-mono text-xs opacity-70">
+              {count(f.value)}
+            </span>
           </Link>
         );
       })}

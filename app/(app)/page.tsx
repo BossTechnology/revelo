@@ -5,16 +5,21 @@ import Link from "next/link";
 import { ProjectMark } from "@/components/relevo/chips";
 import { NewProjectDialog } from "@/components/relevo/new-project-dialog";
 import { THIRD_PARTY_COLOR } from "@/lib/relevo/domain";
-import { getProjectsOverview, getViewer } from "@/lib/relevo/queries";
+import {
+  getCompanies,
+  getProjectsOverview,
+  getViewer,
+} from "@/lib/relevo/queries";
 
 export const metadata: Metadata = { title: "Proyectos · Relevo" };
 
 type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
 
 export default async function ProjectsPage() {
-  const [viewer, projects] = await Promise.all([
+  const [viewer, { projects, companies }, companyNames] = await Promise.all([
     getViewer(),
     getProjectsOverview(),
+    getCompanies(),
   ]);
   const people = [...(viewer?.profiles.values() ?? [])];
   const me = viewer?.userId;
@@ -61,6 +66,7 @@ export default async function ProjectsPage() {
         <NewProjectDialog
           people={people.map((p) => ({ id: p.id, name: p.display_name }))}
           me={me ?? ""}
+          companies={companyNames.map((c) => c.name)}
         />
       </header>
 
@@ -70,104 +76,120 @@ export default async function ProjectsPage() {
           agregue.
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {projects.map((p) => (
-            <li key={p.id}>
-              <Link
-                href={`/p/${p.key}`}
-                className="flex h-full flex-col gap-4 rounded-lg border bg-card p-4 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                <div className="flex items-center gap-3">
-                  <ProjectMark name={p.name} color={p.color} />
-                  <div className="flex min-w-0 flex-col">
-                    <span className="font-semibold">{p.name}</span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {p.key}
-                    </span>
-                  </div>
-                </div>
-
-                {p.repos.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.repos.map((r) => (
-                      <span
-                        key={r}
-                        className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 font-mono text-xs"
-                      >
-                        <BookMarked className="size-3" aria-hidden />
-                        {r}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2">
-                  <div
-                    className="flex h-1.5 overflow-hidden rounded-full bg-secondary"
-                    aria-hidden
+        companies.map((company) => (
+          <section
+            key={company.id}
+            aria-labelledby={`empresa-${company.id}`}
+            className="flex flex-col gap-3"
+          >
+            <h2
+              id={`empresa-${company.id}`}
+              className="text-sm font-medium tracking-wide text-muted-foreground uppercase"
+            >
+              {company.name}
+            </h2>
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {company.projects.map((p) => (
+                <li key={p.id}>
+                  <Link
+                    href={`/p/${p.key}`}
+                    className="flex h-full flex-col gap-4 rounded-lg border bg-card p-4 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-ring"
                   >
-                    <span
-                      className="bg-muted-foreground/50"
-                      style={{ width: pct(p.byStatus.por_hacer, p.total) }}
-                    />
-                    <span
-                      className="bg-[#E0A800]"
-                      style={{ width: pct(p.byStatus.en_proceso, p.total) }}
-                    />
-                    <span
-                      className="bg-[#1F9D55] dark:bg-[#3FBF73]"
-                      style={{ width: pct(p.byStatus.terminado, p.total) }}
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span>
-                      Por hacer{" "}
-                      <strong className="text-foreground">
-                        {p.byStatus.por_hacer}
-                      </strong>
-                    </span>
-                    <span>
-                      En proceso{" "}
-                      <strong className="text-foreground">
-                        {p.byStatus.en_proceso}
-                      </strong>
-                    </span>
-                    <span>
-                      Terminado{" "}
-                      <strong className="text-foreground">
-                        {p.byStatus.terminado}
-                      </strong>
-                    </span>
-                  </div>
-                </div>
-
-                <dl className="grid grid-cols-2 gap-2 text-sm">
-                  {people.map((person) => (
-                    <div
-                      key={person.id}
-                      className="flex items-center justify-between rounded-md bg-secondary/60 px-2 py-1.5"
-                    >
-                      <dt className="text-muted-foreground">
-                        Esperando a {person.display_name}
-                      </dt>
-                      <dd className="font-mono font-semibold">
-                        {p.waitingFor.get(person.id) ?? 0}
-                      </dd>
+                    <div className="flex items-center gap-3">
+                      <ProjectMark name={p.name} color={p.color} />
+                      <div className="flex min-w-0 flex-col">
+                        <span className="font-semibold">{p.name}</span>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {p.key}
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </dl>
 
-                <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="size-3.5" aria-hidden />
-                    {p.lastActivity ?? "Sin actividad"}
-                  </span>
-                  {p.thirdParty > 0 && <span>{p.thirdParty} con terceros</span>}
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                    {p.repos.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {p.repos.map((r) => (
+                          <span
+                            key={r}
+                            className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 font-mono text-xs"
+                          >
+                            <BookMarked className="size-3" aria-hidden />
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                      <div
+                        className="flex h-1.5 overflow-hidden rounded-full bg-secondary"
+                        aria-hidden
+                      >
+                        <span
+                          className="bg-muted-foreground/50"
+                          style={{ width: pct(p.byStatus.por_hacer, p.total) }}
+                        />
+                        <span
+                          className="bg-[#E0A800]"
+                          style={{ width: pct(p.byStatus.en_proceso, p.total) }}
+                        />
+                        <span
+                          className="bg-[#1F9D55] dark:bg-[#3FBF73]"
+                          style={{ width: pct(p.byStatus.terminado, p.total) }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span>
+                          Por hacer{" "}
+                          <strong className="text-foreground">
+                            {p.byStatus.por_hacer}
+                          </strong>
+                        </span>
+                        <span>
+                          En proceso{" "}
+                          <strong className="text-foreground">
+                            {p.byStatus.en_proceso}
+                          </strong>
+                        </span>
+                        <span>
+                          Terminado{" "}
+                          <strong className="text-foreground">
+                            {p.byStatus.terminado}
+                          </strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <dl className="grid grid-cols-2 gap-2 text-sm">
+                      {people.map((person) => (
+                        <div
+                          key={person.id}
+                          className="flex items-center justify-between rounded-md bg-secondary/60 px-2 py-1.5"
+                        >
+                          <dt className="text-muted-foreground">
+                            Esperando a {person.display_name}
+                          </dt>
+                          <dd className="font-mono font-semibold">
+                            {p.waitingFor.get(person.id) ?? 0}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                    <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="size-3.5" aria-hidden />
+                        {p.lastActivity ?? "Sin actividad"}
+                      </span>
+                      {p.thirdParty > 0 && (
+                        <span>{p.thirdParty} con terceros</span>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
       )}
     </main>
   );

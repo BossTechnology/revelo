@@ -12,13 +12,18 @@ test.describe("proyectos y board (Fase 2)", () => {
   // serie para que uno no invalide el enlace del otro.
   test.describe.configure({ mode: "serial" });
 
-  test("Henry ve sus 3 proyectos con conteos por estado y por turno", async ({
+  test("Henry ve sus proyectos agrupados por empresa, con conteos por estado y por turno", async ({
     page,
   }) => {
     await signInFast(page, HENRY);
 
     const cards = page.getByRole("main").getByRole("listitem");
-    await expect(cards).toHaveCount(3);
+    await expect(cards).toHaveCount(4);
+    const boss = page.getByRole("region", { name: "Boss" });
+    await expect(boss.getByRole("listitem")).toHaveCount(3);
+    const fdf = page.getByRole("region", { name: "Fuerza de Fuerza" });
+    await expect(fdf.getByRole("listitem")).toHaveCount(1);
+    await expect(fdf).toContainText("TBT");
     const bob = cards.filter({ hasText: "BOb" });
     await expect(bob).toContainText("BossTechnology/Bob-New");
     await expect(bob).toContainText("Por hacer 3");

@@ -3,6 +3,7 @@ import { adminClient, createInvitedUser, testEmail } from "./supabase";
 export type Team = {
   projectId: string;
   key: string;
+  company: string;
   a: { id: string; email: string; name: string };
   b: { id: string; email: string; name: string };
 };
@@ -13,6 +14,17 @@ function randomKey() {
     { length: 5 },
     () => letters[Math.floor(Math.random() * 26)],
   ).join("");
+}
+
+/** Una empresa propia para el test (Fase 7): todo proyecto pertenece a una. */
+export async function createCompany(name: string) {
+  const { data, error } = await adminClient()
+    .from("companies")
+    .insert({ name })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id;
 }
 
 /**
@@ -41,9 +53,16 @@ export async function createTeam(): Promise<Team> {
     profiles!.find((p) => p.display_name === name)!.id;
 
   const key = randomKey();
+  const company = `Empresa ${key}`;
+  const companyId = await createCompany(company);
   const { data: project, error } = await admin
     .from("projects")
-    .insert({ name: `Proyecto ${key}`, key, color: "#3442C4" })
+    .insert({
+      name: `Proyecto ${key}`,
+      key,
+      color: "#3442C4",
+      company_id: companyId,
+    })
     .select("id")
     .single();
   if (error) throw error;
@@ -56,6 +75,7 @@ export async function createTeam(): Promise<Team> {
   return {
     projectId: project.id,
     key,
+    company,
     a: { id: idOf(a.name), ...a },
     b: { id: idOf(b.name), ...b },
   };
@@ -68,6 +88,7 @@ export async function seedTask(
     title: string;
     turnUserId: string;
     type?: "handoff" | "pregunta" | "decision" | "externo";
+    categoryId?: string;
   },
 ) {
   const { data, error } = await adminClient()
@@ -82,6 +103,7 @@ export async function seedTask(
       turn_user_id: fields.turnUserId,
       created_by: team.b.id,
       created_via: "web",
+      category_id: fields.categoryId ?? null,
     })
     .select("id, key")
     .single();

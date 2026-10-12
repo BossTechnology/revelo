@@ -129,6 +129,32 @@ test.describe("servidor MCP", () => {
     expect(created.isError).toBe(false);
     const newKey = created.text.match(new RegExp(`${team.key}-\\d+`))![0];
 
+    // Fase 7: crear_tarea con categoría; un nombre que no existe lista las disponibles.
+    await adminClient()
+      .from("categories")
+      .insert({ project_id: team.projectId, name: "Infra", position: 0 });
+    const categorized = await call("crear_tarea", {
+      proyecto: team.key,
+      tipo: "handoff",
+      titulo: "Subir el runner",
+      turno: "yo",
+      categoria: "infra",
+    });
+    expect(categorized.text).toContain("Categoría: Infra");
+    const wrong = await call("crear_tarea", {
+      proyecto: team.key,
+      tipo: "handoff",
+      titulo: "Otra",
+      turno: "yo",
+      categoria: "Inventada",
+    });
+    expect(wrong.isError).toBe(true);
+    expect(wrong.text).toContain("Las del proyecto son: Infra");
+    expect(
+      (await call("ver_board", { proyecto: team.key, categoria: "Infra" }))
+        .text,
+    ).toContain("(Infra)");
+
     expect(
       (
         await call("responder", {

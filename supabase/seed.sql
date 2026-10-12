@@ -39,10 +39,22 @@ update public.profiles set turn_color = '#C2410C' where id = '22222222-2222-4222
 -- ---------------------------------------------------------------------------
 -- Proyectos
 -- ---------------------------------------------------------------------------
-insert into public.projects (id, name, key, color, next_number) values
-  ('aaaaaaaa-0000-4000-8000-00000000b0b0', 'BOb', 'BOB', '#7C3AED', 10),
-  ('aaaaaaaa-0000-4000-8000-0000000b2b2b', 'BzzzBX', 'BZX', '#0E7490', 1),
-  ('aaaaaaaa-0000-4000-8000-00000000303f', 'Momentum', 'MOM', '#B45309', 7);
+-- La empresa Boss la crea la migración de la Fase 7; Fuerza de Fuerza se agrega aquí con TBT.
+insert into public.companies (id, name) values
+  ('cccccccc-0000-4000-8000-0000000000f0', 'Fuerza de Fuerza');
+
+insert into public.projects (id, name, key, color, next_number, company_id) values
+  ('aaaaaaaa-0000-4000-8000-00000000b0b0', 'BOb', 'BOB', '#7C3AED', 10, (select id from public.companies where name = 'Boss')),
+  ('aaaaaaaa-0000-4000-8000-0000000b2b2b', 'BzzzBX', 'BZX', '#0E7490', 1, (select id from public.companies where name = 'Boss')),
+  ('aaaaaaaa-0000-4000-8000-00000000303f', 'Momentum', 'MOM', '#B45309', 7, (select id from public.companies where name = 'Boss')),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT', 'TBT', '#047857', 1, 'cccccccc-0000-4000-8000-0000000000f0');
+
+insert into public.categories (project_id, name, position) values
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT.Cafe', 0),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'Fly.io', 1),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', '3 Chains', 2),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Admin', 3),
+  ('aaaaaaaa-0000-4000-8000-0000000007b7', 'TBT Content', 4);
 
 insert into public.project_members (project_id, user_id)
 select p.id, u.id
