@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import {
   AddMember,
+  CategoryList,
   ConnectRepo,
   GeneralForm,
   RepoRow,
@@ -35,7 +36,7 @@ export default async function ProjectSettingsPage({
   const { data: project } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, project_members(user_id), project_repos(owner, repo, installation_id)",
+      "id, name, key, color, companies(name), project_members(user_id), project_repos(owner, repo, installation_id), categories(id, name, position, archived_at)",
     )
     .eq("key", key.toUpperCase())
     .maybeSingle();
@@ -62,6 +63,9 @@ export default async function ProjectSettingsPage({
         <h1 className="text-2xl font-semibold tracking-tight">
           Ajustes de {project.name}
         </h1>
+        <p className="text-sm text-muted-foreground">
+          Empresa: {project.companies.name}
+        </p>
       </header>
 
       <section className="flex flex-col gap-3" aria-labelledby="general">
@@ -69,6 +73,32 @@ export default async function ProjectSettingsPage({
           General
         </h2>
         <GeneralForm ctx={ctx} name={project.name} color={project.color} />
+      </section>
+
+      <section className="flex flex-col gap-3" aria-labelledby="categorias">
+        <h2 id="categorias" className="text-sm font-semibold">
+          Categorías
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Dividen el proyecto en frentes (por ejemplo, las pestañas de un Doc).
+          Son opcionales; el tablero las usa como filtro. Una categoría
+          archivada deja de ofrecerse para tareas nuevas, pero sus tareas la
+          conservan.
+        </p>
+        <CategoryList
+          ctx={ctx}
+          categories={[...project.categories]
+            .sort(
+              (a, b) =>
+                Number(a.archived_at !== null) -
+                  Number(b.archived_at !== null) || a.position - b.position,
+            )
+            .map((c) => ({
+              id: c.id,
+              name: c.name,
+              archived: c.archived_at !== null,
+            }))}
+        />
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="miembros">

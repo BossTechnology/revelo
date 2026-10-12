@@ -7,7 +7,7 @@ select plan(7);
 insert into auth.users (id, email, aud, role, raw_user_meta_data) values
   ('0000000e-0000-4000-8000-000000000001', 'miembro@gh.local', 'authenticated', 'authenticated', '{"display_name": "Miembro GH"}'),
   ('0000000e-0000-4000-8000-000000000002', 'ajeno@gh.local', 'authenticated', 'authenticated', '{"display_name": "Ajeno GH"}');
-insert into public.projects (id, name, key, color) values ('0000000f-0000-4000-8000-000000000001', 'GH', 'GHP', '#000000');
+insert into public.projects (id, name, key, color, company_id) values ('0000000f-0000-4000-8000-000000000001', 'GH', 'GHP', '#000000', (select id from public.companies where name = 'Boss'));
 insert into public.project_members values ('0000000f-0000-4000-8000-000000000001', '0000000e-0000-4000-8000-000000000001');
 
 -- Miembro: conecta un repo, cambia nombre, no cambia el prefijo.

@@ -62,8 +62,8 @@ insert into auth.users (id, email, aud, role, raw_user_meta_data) values
   ('0000000a-0000-4000-8000-000000000001', 'miembro@test.local', 'authenticated', 'authenticated', '{"display_name": "Miembro"}'),
   ('0000000a-0000-4000-8000-000000000002', 'ajeno@test.local', 'authenticated', 'authenticated', '{"display_name": "Ajeno"}');
 
-insert into public.projects (id, name, key, color) values
-  ('0000000b-0000-4000-8000-000000000001', 'Prueba', 'PRB', '#000000');
+insert into public.projects (id, name, key, color, company_id) values
+  ('0000000b-0000-4000-8000-000000000001', 'Prueba', 'PRB', '#000000', (select id from public.companies where name = 'Boss'));
 insert into public.project_members (project_id, user_id) values
   ('0000000b-0000-4000-8000-000000000001', '0000000a-0000-4000-8000-000000000001');
 

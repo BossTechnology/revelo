@@ -46,6 +46,7 @@ function friendly(error: { message: string; code?: string }) {
       ? "No tienes acceso a este proyecto."
       : error.message;
   if (error.code === "23505") return "Ya existe un proyecto con ese prefijo.";
+  if (error.code === "23503") return "Esa categoría no es de este proyecto.";
   if (error.code === "23514")
     return "Esa combinación de estado y turno no es válida.";
   return error.message;
@@ -61,11 +62,14 @@ export async function createProject(input: {
   name: string;
   key: string;
   color: string;
+  company: string;
   memberIds: string[];
 }): Promise<ActionResult<{ key: string }>> {
   const key = input.key.trim().toUpperCase();
   if (!input.name.trim())
     return { ok: false, error: "Ponle un nombre al proyecto." };
+  if (!input.company.trim())
+    return { ok: false, error: "Elige la empresa del proyecto." };
   if (!/^[A-Z]{2,5}$/.test(key))
     return {
       ok: false,
@@ -76,6 +80,7 @@ export async function createProject(input: {
     project_name: input.name,
     project_key: key,
     project_color: input.color,
+    company_name: input.company.trim(),
     member_ids: input.memberIds,
   });
   if (error) return { ok: false, error: friendly(error) };
@@ -91,6 +96,7 @@ export async function createTask(input: {
   body: string;
   turn: string;
   dueDate: string | null;
+  categoryId?: string | null;
 }): Promise<ActionResult<{ key: string }>> {
   if (!input.title.trim())
     return { ok: false, error: "La tarea necesita un título." };
@@ -114,6 +120,7 @@ export async function createTask(input: {
       title: input.title.trim(),
       body: input.body,
       due_date: input.dueDate || null,
+      category_id: input.categoryId || null,
       ...turn,
     })
     .select("key")
@@ -129,8 +136,14 @@ export async function updateTask(input: {
   title?: string;
   body?: string;
   dueDate?: string | null;
+  categoryId?: string | null;
 }): Promise<ActionResult> {
-  const patch: { title?: string; body?: string; due_date?: string | null } = {};
+  const patch: {
+    title?: string;
+    body?: string;
+    due_date?: string | null;
+    category_id?: string | null;
+  } = {};
   if (input.title !== undefined) {
     if (!input.title.trim())
       return { ok: false, error: "El título no puede quedar vacío." };
@@ -138,6 +151,8 @@ export async function updateTask(input: {
   }
   if (input.body !== undefined) patch.body = input.body;
   if (input.dueDate !== undefined) patch.due_date = input.dueDate || null;
+  if (input.categoryId !== undefined)
+    patch.category_id = input.categoryId || null;
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -406,5 +421,58 @@ export async function disconnectRepo(input: {
     .eq("repo", input.repo);
   if (error) return { ok: false, error: friendly(error) };
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Categorías (Fase 7): subdividen un proyecto. Se crean, renombran y archivan; no se borran. */
+export async function createCategory(input: {
+  projectId: string;
+  projectKey: string;
+  name: string;
+}): Promise<ActionResult> {
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Ponle un nombre a la categoría." };
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("categories")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", input.projectId);
+  const { error } = await supabase
+    .from("categories")
+    .insert({ project_id: input.projectId, name, position: count ?? 0 });
+  if (error) {
+    if (error.code === "23505")
+      return { ok: false, error: "Ya existe una categoría con ese nombre." };
+    return { ok: false, error: friendly(error) };
+  }
+  refresh(input.projectKey);
+  return { ok: true };
+}
+
+export async function updateCategory(input: {
+  categoryId: string;
+  projectKey: string;
+  name?: string;
+  archived?: boolean;
+}): Promise<ActionResult> {
+  const patch: { name?: string; archived_at?: string | null } = {};
+  if (input.name !== undefined) {
+    if (!input.name.trim())
+      return { ok: false, error: "El nombre no puede quedar vacío." };
+    patch.name = input.name.trim();
+  }
+  if (input.archived !== undefined)
+    patch.archived_at = input.archived ? new Date().toISOString() : null;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("categories")
+    .update(patch)
+    .eq("id", input.categoryId);
+  if (error) {
+    if (error.code === "23505")
+      return { ok: false, error: "Ya existe una categoría con ese nombre." };
+    return { ok: false, error: friendly(error) };
+  }
+  refresh(input.projectKey);
   return { ok: true };
 }

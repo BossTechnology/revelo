@@ -156,6 +156,44 @@ export function TurnSelect({
   );
 }
 
+/** Categoría de la tarea (Fase 7). Solo aparece si el proyecto tiene categorías. */
+export function CategorySelect({
+  ctx,
+  current,
+  categories,
+}: {
+  ctx: Ctx;
+  current: string | null;
+  categories: { id: string; name: string; archived: boolean }[];
+}) {
+  const [pending, run] = useAction();
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="task-category">Categoría</Label>
+      <select
+        id="task-category"
+        className={NATIVE_SELECT}
+        defaultValue={current ?? ""}
+        key={current ?? "none"}
+        disabled={pending}
+        onChange={(e) =>
+          run(() => updateTask({ ...ctx, categoryId: e.target.value || null }))
+        }
+      >
+        <option value="">Sin categoría</option>
+        {categories
+          .filter((c) => !c.archived || c.id === current)
+          .map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.archived ? " (archivada)" : ""}
+            </option>
+          ))}
+      </select>
+    </div>
+  );
+}
+
 export function DueDateField({ ctx, due }: { ctx: Ctx; due: string | null }) {
   const [pending, run] = useAction();
   return (

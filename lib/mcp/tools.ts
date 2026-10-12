@@ -11,8 +11,10 @@ import { TASK_TYPES, type TaskType } from "@/lib/relevo/domain";
 
 import {
   dbError,
+  findCategory,
   findProject,
   findTask,
+  projectCategories,
   resolveTurn,
   ToolError,
   userClient,
@@ -126,11 +128,12 @@ export function registerTools(server: McpServer) {
       const { data: tasks } = await db
         .from("tasks")
         .select(
-          "id, key, type, title, status, turn, turn_user_id, turn_third_party, due_date, updated_at",
+          "id, key, type, title, status, turn, turn_user_id, turn_third_party, due_date, updated_at, category_id",
         )
         .eq("project_id", project.id)
         .order("number", { ascending: false });
       const all = tasks ?? [];
+      const categories = await projectCategories(db, project.id);
       const open = all.filter((t) => t.status !== "terminado");
       const groups = new Map<string, typeof open>();
       for (const t of open) {
@@ -150,8 +153,18 @@ export function registerTools(server: McpServer) {
         .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
 
       return text([
-        `# ${project.name} (${project.key}) · ${open.length} abiertas, ${all.length - open.length} terminadas`,
+        `# ${project.name} (${project.key}) · ${project.company} · ${open.length} abiertas, ${all.length - open.length} terminadas`,
         "",
+        ...(categories.length
+          ? [
+              "## Categorías",
+              ...categories.map((c) => {
+                const n = open.filter((t) => t.category_id === c.id).length;
+                return `- ${c.name}${c.archived_at ? " (archivada)" : ""}: ${n} abiertas`;
+              }),
+              "",
+            ]
+          : []),
         "## Abiertas por turno",
         ...[...groups.entries()].flatMap(([k, ts]) => [
           `- Turno de ${k} (${ts.length}): ${ts
@@ -229,29 +242,39 @@ export function registerTools(server: McpServer) {
     {
       title: "Ver board",
       description:
-        "Tarjetas resumidas por columna de un proyecto (sin cuerpos). Filtro opcional: mio, terceros o el nombre de una persona.",
+        "Tarjetas resumidas por columna de un proyecto (sin cuerpos). Filtros opcionales: por turno (mio, terceros o el nombre de una persona) y por categoría.",
       inputSchema: z.object({
         proyecto: z.string().describe("Prefijo del proyecto, ej. BOB"),
         filtro: z
           .string()
           .optional()
           .describe('"mio", "terceros" o el nombre de una persona'),
+        categoria: z
+          .string()
+          .optional()
+          .describe("Nombre de una categoría del proyecto"),
       }),
       annotations: { readOnlyHint: true },
     },
-    tool<{ proyecto: string; filtro?: string }>(
-      async ({ proyecto, filtro }, db, me) => {
+    tool<{ proyecto: string; filtro?: string; categoria?: string }>(
+      async ({ proyecto, filtro, categoria }, db, me) => {
         const project = await findProject(db, proyecto);
         const who = await names(db);
+        const categories = await projectCategories(db, project.id);
+        const categoryName = new Map(categories.map((c) => [c.id, c.name]));
+        const onlyCategory = categoria?.trim()
+          ? (await findCategory(db, project.id, categoria)).id
+          : null;
         const { data } = await db
           .from("tasks")
           .select(
-            "key, type, title, status, turn, turn_user_id, turn_third_party, due_date",
+            "key, type, title, status, turn, turn_user_id, turn_third_party, due_date, category_id",
           )
           .eq("project_id", project.id)
           .order("number", { ascending: false });
         const f = filtro?.trim().toLowerCase();
         const rows = (data ?? []).filter((t) => {
+          if (onlyCategory && t.category_id !== onlyCategory) return false;
           if (!f) return true;
           if (f === "mio") return t.turn === "persona" && t.turn_user_id === me;
           if (f === "terceros") return t.turn === "tercero";
@@ -261,7 +284,7 @@ export function registerTools(server: McpServer) {
           );
         });
         return text([
-          `# ${project.key}${f ? ` · filtro ${f}` : ""}`,
+          `# ${project.key}${f ? ` · filtro ${f}` : ""}${onlyCategory ? ` · categoría ${categoryName.get(onlyCategory)}` : ""}`,
           ...(["por_hacer", "en_proceso", "terminado"] as const).flatMap(
             (s) => {
               const col = rows.filter((t) => t.status === s);
@@ -270,7 +293,7 @@ export function registerTools(server: McpServer) {
                 `## ${STATUS_LABEL[s]} (${col.length})`,
                 ...col.map(
                   (t) =>
-                    `- ${t.key} [${TASK_TYPES[t.type].label}] turno: ${turnText(t, who, me)}${t.due_date ? ` · vence ${t.due_date}` : ""}\n  ${userContent(t.title)}`,
+                    `- ${t.key} [${TASK_TYPES[t.type].label}]${t.category_id ? ` (${categoryName.get(t.category_id)})` : ""} turno: ${turnText(t, who, me)}${t.due_date ? ` · vence ${t.due_date}` : ""}\n  ${userContent(t.title)}`,
                 ),
               ];
             },
@@ -304,7 +327,7 @@ export function registerTools(server: McpServer) {
         db
           .from("tasks")
           .select(
-            "key, aliases, type, title, body, status, turn, turn_user_id, turn_third_party, due_date, created_by, created_via, created_at",
+            "key, aliases, type, title, body, status, turn, turn_user_id, turn_third_party, due_date, created_by, created_via, created_at, categories(name)",
           )
           .eq("id", ref.id)
           .single(),
@@ -335,6 +358,7 @@ export function registerTools(server: McpServer) {
       return text([
         `# ${t.key}${t.aliases.length ? ` (alias ${t.aliases.join(", ")})` : ""} · ${TASK_TYPES[t.type].label} · ${STATUS_LABEL[t.status]}`,
         `Turno: ${turnText(t, who, me)}${t.due_date ? ` · vence ${t.due_date}` : ""}`,
+        ...(t.categories ? [`Categoría: ${t.categories.name}`] : []),
         `Creada por ${who.get(t.created_by) ?? "?"} vía ${t.created_via} el ${t.created_at.slice(0, 10)}`,
         "",
         "## Título",
@@ -438,9 +462,10 @@ export function registerTools(server: McpServer) {
     {
       title: "Crear tarea",
       description:
-        'Crea una tarea. turno: "yo", el nombre de una persona del proyecto o "tercero:<nombre>".',
+        'Crea una tarea. turno: "yo", el nombre de una persona del proyecto o "tercero:<nombre>". categoria: el nombre de una categoría del proyecto (opcional; resumen_proyecto las lista).',
       inputSchema: z.object({
         proyecto: z.string(),
+        categoria: z.string().optional(),
         tipo: z.enum(TYPE_IDS),
         titulo: z.string().min(1),
         cuerpo: z.string().default(""),
@@ -458,9 +483,13 @@ export function registerTools(server: McpServer) {
       cuerpo: string;
       turno: string;
       fecha_limite?: string;
+      categoria?: string;
     }>(async (a, db, me) => {
       const project = await findProject(db, a.proyecto);
       const turn = await resolveTurn(db, project.id, me, a.turno);
+      const category = a.categoria?.trim()
+        ? await findCategory(db, project.id, a.categoria)
+        : null;
       const { data, error } = await db
         .from("tasks")
         .insert({
@@ -471,6 +500,7 @@ export function registerTools(server: McpServer) {
           title: a.titulo.trim(),
           body: a.cuerpo,
           due_date: a.fecha_limite ?? null,
+          category_id: category?.id ?? null,
           // created_by y created_via los fija el servidor: quedará via = mcp.
           created_by: me,
           created_via: "mcp",
@@ -479,7 +509,9 @@ export function registerTools(server: McpServer) {
         .select("key")
         .single();
       if (error) throw dbError(error);
-      return text([`Creada ${data.key}. Turno: ${a.turno}.`]);
+      return text([
+        `Creada ${data.key}. Turno: ${a.turno}.${category ? ` Categoría: ${category.name}.` : ""}`,
+      ]);
     }),
   );
 

@@ -63,14 +63,49 @@ export async function findTask(db: Db, id: string) {
 export async function findProject(db: Db, key: string) {
   const { data } = await db
     .from("projects")
-    .select("id, key, name")
+    .select("id, key, name, companies(name)")
     .eq("key", key.trim().toUpperCase())
     .maybeSingle();
   if (!data)
     throw new ToolError(
       `No encontré el proyecto ${key.toUpperCase()} (o no eres miembro).`,
     );
-  return data;
+  return {
+    id: data.id,
+    key: data.key,
+    name: data.name,
+    company: data.companies.name,
+  };
+}
+
+/** Categorías del proyecto (Fase 7), activas primero. */
+export async function projectCategories(db: Db, projectId: string) {
+  const { data } = await db
+    .from("categories")
+    .select("id, name, position, archived_at")
+    .eq("project_id", projectId)
+    .order("position");
+  return (data ?? []).sort(
+    (a, b) => Number(a.archived_at !== null) - Number(b.archived_at !== null),
+  );
+}
+
+/**
+ * Busca una categoría activa del proyecto por nombre, sin distinguir mayúsculas. Si no existe,
+ * el error lista las disponibles para que la IA corrija sin adivinar.
+ */
+export async function findCategory(db: Db, projectId: string, name: string) {
+  const categories = await projectCategories(db, projectId);
+  const active = categories.filter((c) => c.archived_at === null);
+  const wanted = name.trim().toLowerCase();
+  const found = active.find((c) => c.name.toLowerCase() === wanted);
+  if (!found)
+    throw new ToolError(
+      active.length
+        ? `No hay una categoría "${name}". Las del proyecto son: ${active.map((c) => c.name).join(", ")}.`
+        : "Este proyecto no tiene categorías.",
+    );
+  return found;
 }
 
 /**

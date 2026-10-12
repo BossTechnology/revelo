@@ -45,6 +45,7 @@ export default async function BoardLayout({
 
   const { project, tasks } = board;
   const me = viewer.userId;
+  const categoryById = new Map(project.categories.map((c) => [c.id, c]));
   const members = project.memberIds
     .map((id) => viewer.profiles.get(id))
     .filter((p) => p !== undefined)
@@ -67,6 +68,12 @@ export default async function BoardLayout({
       replies: t.replies,
       attachments: t.attachments,
       age: relativeAge(t.createdAt),
+      category: t.categoryId
+        ? {
+            id: t.categoryId,
+            name: categoryById.get(t.categoryId)?.name ?? "Categoría",
+          }
+        : null,
     };
   });
 
@@ -87,6 +94,24 @@ export default async function BoardLayout({
     { value: "terceros", label: "Terceros", color: THIRD_PARTY_COLOR },
   ];
 
+  // Las archivadas solo aparecen como filtro si todavía tienen tareas.
+  const categoryFilters =
+    project.categories.length === 0
+      ? []
+      : [
+          { value: "todas", label: "Todas las categorías", color: null },
+          ...project.categories
+            .filter(
+              (c) =>
+                !c.archived_at ||
+                cards.some((card) => card.category?.id === c.id),
+            )
+            .map((c) => ({ value: c.id, label: c.name, color: null })),
+          ...(cards.some((c) => c.category === null)
+            ? [{ value: "sin", label: "Sin categoría", color: null }]
+            : []),
+        ];
+
   return (
     <main className="flex min-h-0 flex-1 flex-col gap-4 p-6">
       <RealtimeRefresh projectId={project.id} />
@@ -96,7 +121,7 @@ export default async function BoardLayout({
             <Link href="/" className="hover:underline">
               Proyectos
             </Link>{" "}
-            / {project.name}
+            / {project.company} / {project.name}
           </nav>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -132,12 +157,15 @@ export default async function BoardLayout({
             projectKey={project.key}
             members={members.map(({ id, name }) => ({ id, name }))}
             me={me}
+            categories={project.categories
+              .filter((c) => !c.archived_at)
+              .map(({ id, name }) => ({ id, name }))}
           />
         </div>
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
-        <FilterBar filters={filters} cards={cards} me={me} />
+        <FilterBar kind="turno" filters={filters} cards={cards} me={me} />
         <span
           className="ml-auto hidden flex-wrap gap-3 lg:flex"
           aria-label="Tipos de tarea"
@@ -147,6 +175,15 @@ export default async function BoardLayout({
           ))}
         </span>
       </div>
+
+      {categoryFilters.length > 0 && (
+        <FilterBar
+          kind="categoria"
+          filters={categoryFilters}
+          cards={cards}
+          me={me}
+        />
+      )}
 
       <BoardColumns projectKey={project.key} cards={cards} me={me} />
       {children}

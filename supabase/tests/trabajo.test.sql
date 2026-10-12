@@ -25,7 +25,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub": "0000000c-0000-4000-8000-000000000001", "role": "authenticated"}';
 
 select is(
-  (public.create_project('Nuevo', 'nvo', '#000000', array['0000000c-0000-4000-8000-000000000002'::uuid])).key,
+  (public.create_project('Nuevo', 'nvo', '#000000', 'Empresa de prueba', array['0000000c-0000-4000-8000-000000000002'::uuid])).key,
   'NVO', 'create_project normaliza el prefijo a mayúsculas'
 );
 select results_eq(
@@ -50,7 +50,7 @@ select results_eq(
 reset role;
 
 select throws_ok(
-  $$ set local role anon; select public.create_project('X', 'XX', '#000000') $$,
+  $$ set local role anon; select public.create_project('X', 'XX', '#000000', 'Y') $$,
   '42501', null, 'anon no puede crear proyectos'
 );
 reset role;

@@ -18,6 +18,7 @@ import {
   GitPullRequest,
   MessageSquare,
   Paperclip,
+  Tag,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -55,6 +56,8 @@ export type CardView = {
   replies: number;
   attachments: number;
   age: string;
+  /** Categoría del proyecto (Fase 7), si la tiene. */
+  category: { id: string; name: string } | null;
 };
 
 /** Filtro por turno: "todo", "mio", "terceros" o el id de una persona ("Esperando a…"). */
@@ -64,6 +67,13 @@ export function matchesFilter(card: CardView, filter: string, me: string) {
     return card.turn.kind === "persona" && card.turn.userId === me;
   if (filter === "terceros") return card.turn.kind === "tercero";
   return card.turn.kind === "persona" && card.turn.userId === filter;
+}
+
+/** Filtro por categoría: "todas", "sin" (sin categoría) o el id de una categoría. */
+export function matchesCategory(card: CardView, category: string) {
+  if (category === "todas") return true;
+  if (category === "sin") return card.category === null;
+  return card.category?.id === category;
 }
 
 /** Con teclado, ← y → saltan a la columna vecina (en vez de mover 25 px). */
@@ -96,7 +106,9 @@ export function BoardColumns({
   cards: CardView[];
   me: string;
 }) {
-  const filter = useSearchParams().get("filtro") ?? "todo";
+  const params = useSearchParams();
+  const filter = params.get("filtro") ?? "todo";
+  const category = params.get("categoria") ?? "todas";
   const selectedKey = useParams<{ taskKey?: string }>().taskKey;
   const [, startTransition] = useTransition();
   const [optimistic, applyMove] = useOptimistic(
@@ -141,7 +153,10 @@ export function BoardColumns({
       >
         {COLUMNS.map((col) => {
           const colCards = optimistic.filter(
-            (c) => c.status === col.status && matchesFilter(c, filter, me),
+            (c) =>
+              c.status === col.status &&
+              matchesFilter(c, filter, me) &&
+              matchesCategory(c, category),
           );
           return (
             <Column
@@ -290,6 +305,12 @@ function DraggableCard({
           </span>
         ))}
         <TypeChip type={card.type} />
+        {card.category && (
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Tag className="size-3" aria-hidden />
+            {card.category.name}
+          </span>
+        )}
       </div>
 
       <Link

@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -31,13 +31,21 @@ export function NewTaskDialog({
   projectKey,
   members,
   me,
+  categories,
 }: {
   projectId: string;
   projectKey: string;
   members: Member[];
   me: string;
+  /** Categorías activas del proyecto (Fase 7); vacío si no tiene. */
+  categories: { id: string; name: string }[];
 }) {
   const router = useRouter();
+  // Si el tablero está filtrado por una categoría, la tarea nueva nace en ella.
+  const filtered = useSearchParams().get("categoria");
+  const defaultCategory = categories.some((c) => c.id === filtered)
+    ? (filtered ?? "")
+    : "";
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [turn, setTurn] = useState(
@@ -57,6 +65,7 @@ export function NewTaskDialog({
         body: String(form.get("body") ?? ""),
         turn: turn === "t:" ? `t:${third}` : turn,
         dueDate: String(form.get("due") ?? "") || null,
+        categoryId: String(form.get("category") ?? "") || null,
       });
       if (!result.ok) {
         setError(result.error);
@@ -144,9 +153,29 @@ export function NewTaskDialog({
               }
             />
           </div>
-          <div className="flex flex-col gap-1.5 sm:w-1/2">
-            <Label htmlFor="new-due">Fecha límite (opcional)</Label>
-            <Input id="new-due" name="due" type="date" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {categories.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="new-category">Categoría</Label>
+                <select
+                  id="new-category"
+                  name="category"
+                  defaultValue={defaultCategory}
+                  className={NATIVE_SELECT}
+                >
+                  <option value="">Sin categoría</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-due">Fecha límite (opcional)</Label>
+              <Input id="new-due" name="due" type="date" />
+            </div>
           </div>
           {error && (
             <p role="alert" className="text-sm text-destructive">

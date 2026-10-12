@@ -55,6 +55,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"categories": {
+                  Row: {
+                    "archived_at": string | null,"created_at": string,"id": string,"name": string,"position": number,"project_id": string
+                  }
+                  Insert: {
+                    "archived_at"?: string | null,"created_at"?: string,"id"?: string,"name": string,"position"?: number,"project_id": string
+                  }
+                  Update: {
+                    "archived_at"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"position"?: number,"project_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "categories_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"companies": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"git_events": {
                   Row: {
                     "delivery_id": string,"id": number,"kind": string,"occurred_at": string,"owner": string,"payload": NonNullable<Json>,"pr_number": number | null,"project_id": string | null,"ref": string | null,"repo": string,"sha": string | null,"state": string | null,"title": string | null,"url": string | null
@@ -152,16 +184,22 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "archived_at": string | null,"color": string,"created_at": string,"id": string,"key": string,"name": string,"next_number": number
+                    "archived_at": string | null,"color": string,"company_id": string,"created_at": string,"id": string,"key": string,"name": string,"next_number": number
                   }
                   Insert: {
-                    "archived_at"?: string | null,"color": string,"created_at"?: string,"id"?: string,"key": string,"name": string,"next_number"?: number
+                    "archived_at"?: string | null,"color": string,"company_id": string,"created_at"?: string,"id"?: string,"key": string,"name": string,"next_number"?: number
                   }
                   Update: {
-                    "archived_at"?: string | null,"color"?: string,"created_at"?: string,"id"?: string,"key"?: string,"name"?: string,"next_number"?: number
+                    "archived_at"?: string | null,"color"?: string,"company_id"?: string,"created_at"?: string,"id"?: string,"key"?: string,"name"?: string,"next_number"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "projects_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"replies": {
                   Row: {
@@ -240,16 +278,22 @@ isOneToOne: false
                   ]
                 },"tasks": {
                   Row: {
-                    "aliases": (string)[],"body": string,"created_at": string,"created_by": string,"created_via": string,"due_date": string | null,"id": string,"key": string,"number": number,"project_id": string,"status": Database["public"]['Enums']["task_status"],"title": string,"turn": Database["public"]['Enums']["turn_kind"],"turn_third_party": string | null,"turn_user_id": string | null,"type": Database["public"]['Enums']["task_type"],"updated_at": string,"turn_label": string | null
+                    "aliases": (string)[],"body": string,"category_id": string | null,"created_at": string,"created_by": string,"created_via": string,"due_date": string | null,"id": string,"key": string,"number": number,"project_id": string,"status": Database["public"]['Enums']["task_status"],"title": string,"turn": Database["public"]['Enums']["turn_kind"],"turn_third_party": string | null,"turn_user_id": string | null,"type": Database["public"]['Enums']["task_type"],"updated_at": string,"turn_label": string | null
                   }
                   Insert: {
-                    "aliases"?: (string)[],"body"?: string,"created_at"?: string,"created_by": string,"created_via": string,"due_date"?: string | null,"id"?: string,"key": string,"number": number,"project_id": string,"status"?: Database["public"]['Enums']["task_status"],"title": string,"turn"?: Database["public"]['Enums']["turn_kind"],"turn_third_party"?: string | null,"turn_user_id"?: string | null,"type": Database["public"]['Enums']["task_type"],"updated_at"?: string
+                    "aliases"?: (string)[],"body"?: string,"category_id"?: string | null,"created_at"?: string,"created_by": string,"created_via": string,"due_date"?: string | null,"id"?: string,"key": string,"number": number,"project_id": string,"status"?: Database["public"]['Enums']["task_status"],"title": string,"turn"?: Database["public"]['Enums']["turn_kind"],"turn_third_party"?: string | null,"turn_user_id"?: string | null,"type": Database["public"]['Enums']["task_type"],"updated_at"?: string
                   }
                   Update: {
-                    "aliases"?: (string)[],"body"?: string,"created_at"?: string,"created_by"?: string,"created_via"?: string,"due_date"?: string | null,"id"?: string,"key"?: string,"number"?: number,"project_id"?: string,"status"?: Database["public"]['Enums']["task_status"],"title"?: string,"turn"?: Database["public"]['Enums']["turn_kind"],"turn_third_party"?: string | null,"turn_user_id"?: string | null,"type"?: Database["public"]['Enums']["task_type"],"updated_at"?: string
+                    "aliases"?: (string)[],"body"?: string,"category_id"?: string | null,"created_at"?: string,"created_by"?: string,"created_via"?: string,"due_date"?: string | null,"id"?: string,"key"?: string,"number"?: number,"project_id"?: string,"status"?: Database["public"]['Enums']["task_status"],"title"?: string,"turn"?: Database["public"]['Enums']["turn_kind"],"turn_third_party"?: string | null,"turn_user_id"?: string | null,"type"?: Database["public"]['Enums']["task_type"],"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "tasks_category_same_project"
+      columns: ["project_id","category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["project_id","id"]
+    },{
       foreignKeyName: "tasks_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -276,9 +320,10 @@ isOneToOne: false
           }
           Functions: {
             "create_project":
-{ Args: { "member_ids"?: (string)[],"project_color": string,"project_key": string,"project_name": string }; Returns: {
+{ Args: { "company_name": string,"member_ids"?: (string)[],"project_color": string,"project_key": string,"project_name": string }; Returns: {
               "archived_at": string | null,
 "color": string,
+"company_id": string,
 "created_at": string,
 "id": string,
 "key": string,
@@ -296,6 +341,9 @@ isOneToOne: false
                            },
 "is_allowed_email":
 { Args: { "email": string }; Returns: boolean
+                           },
+"is_company_member":
+{ Args: { "company": string }; Returns: boolean
                            },
 "is_member":
 { Args: { "project": string }; Returns: boolean

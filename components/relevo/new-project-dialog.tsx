@@ -32,9 +32,12 @@ const COLORS = [
 export function NewProjectDialog({
   people,
   me,
+  companies,
 }: {
   people: { id: string; name: string }[];
   me: string;
+  /** Empresas que ya ves; escribir otro nombre crea una empresa nueva. */
+  companies: string[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -50,6 +53,7 @@ export function NewProjectDialog({
         name: String(form.get("name") ?? ""),
         key: String(form.get("key") ?? ""),
         color,
+        company: String(form.get("company") ?? ""),
         memberIds: form.getAll("members").map(String),
       });
       if (!result.ok) {
@@ -75,7 +79,8 @@ export function NewProjectDialog({
           <DialogTitle>Nuevo proyecto</DialogTitle>
           <DialogDescription>
             El prefijo forma los IDs de las tareas (MOM-1, MOM-2…). Los repos de
-            GitHub se conectan en la Fase 5.
+            GitHub y las categorías se configuran después, en los ajustes del
+            proyecto.
           </DialogDescription>
         </DialogHeader>
         <form action={onSubmit} className="flex flex-col gap-4">
@@ -102,6 +107,27 @@ export function NewProjectDialog({
                 className="font-mono uppercase"
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="project-company">Empresa</Label>
+            <Input
+              id="project-company"
+              name="company"
+              required
+              list="project-companies"
+              defaultValue={companies.length === 1 ? companies[0] : ""}
+              placeholder="Boss"
+              autoComplete="off"
+            />
+            <datalist id="project-companies">
+              {companies.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+            <p className="text-xs text-muted-foreground">
+              Elige una de la lista o escribe otro nombre para crear una empresa
+              nueva.
+            </p>
           </div>
           <fieldset className="flex flex-col gap-1.5">
             <legend className="mb-1.5 text-sm font-medium">Color</legend>
