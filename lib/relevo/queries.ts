@@ -29,18 +29,11 @@ export const getViewer = cache(async () => {
     .order("display_name");
   const all = (profiles ?? []) as ProfileLite[];
   const me = all.find((p) => p.id === userId) ?? null;
-  // Crear proyectos exige ser editor de alguno (Fase 8).
-  const { count: editorOf } = await supabase
-    .from("project_members")
-    .select("project_id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("acceso", "editor");
   return {
     userId,
     email: data.claims.email as string | undefined,
     me,
     profiles: new Map(all.map((p) => [p.id, p])),
-    canCreateProjects: (editorOf ?? 0) > 0,
   };
 });
 
@@ -98,6 +91,17 @@ function groupByCompany<T extends { id: string }>(
   return [...groups.values()].sort((a, b) =>
     a.name.localeCompare(b.name, "es"),
   );
+}
+
+/** Crear proyectos exige ser editor de alguno (Fase 8): solo así se ofrece el diálogo. */
+export async function canCreateProjects(userId: string) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("project_members")
+    .select("project_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("acceso", "editor");
+  return (count ?? 0) > 0;
 }
 
 /** Empresas que ve la persona: las sugiere el diálogo de nuevo proyecto. */

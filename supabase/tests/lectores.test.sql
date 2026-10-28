@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(53);
+select plan(55);
 
 -- ---------------------------------------------------------------------------
 -- Guard 1: toda política de insert, update o delete pasa por puede_editar()
@@ -21,6 +21,19 @@ select is_empty(
          ('public', 'profiles', 'profiles: cada quien edita su perfil')
        ) $$,
   'toda política de insert, update o delete usa puede_editar() (salvo la lista revisada)'
+);
+-- Mencionar puede_editar() no basta: `puede_editar(x) or is_member(x)` dejaría escribir al lector.
+select is_empty(
+  $$ select format('%s.%s · %s', schemaname, tablename, policyname)
+     from pg_policies
+     where schemaname in ('public', 'storage')
+       and cmd in ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+       and concat_ws(' ', qual, with_check) ~* '\mor\M'
+       and (schemaname, tablename, policyname) not in (
+         -- Un editor quita a otros o cada quien se sale: el OR es la regla.
+         ('public', 'project_members', 'project_members: editores quitan, cada quien se sale')
+       ) $$,
+  'ninguna política de escritura abre otra vía con OR (salvo la lista revisada)'
 );
 select cmp_ok(
   (select count(*)::int from pg_policies
@@ -247,6 +260,20 @@ select throws_ok(
   $$ insert into public.replies (task_id, author_id, body, via)
      values ((select id from public.tasks where key = 'LEC-1'), '00000010-0000-4000-8000-000000000003', 'x', 'mcp') $$,
   '42501', null, 'lector vía MCP: responder rechazado'
+);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- Ana (no miembro de LEC): RLS la rechaza antes de que el trigger del turno revele nada
+-- ---------------------------------------------------------------------------
+set local role authenticated;
+set local request.jwt.claims = '{"sub": "00000010-0000-4000-8000-000000000004", "role": "authenticated"}';
+select throws_ok(
+  $$ insert into public.tasks (project_id, number, key, type, title, turn, turn_user_id, created_by, created_via)
+     values ('00000010-0000-4000-8000-0000000000a1', 0, '', 'pregunta', 'Sondeo', 'persona',
+             '00000010-0000-4000-8000-000000000003', '00000010-0000-4000-8000-000000000004', 'web') $$,
+  '42501', 'new row violates row-level security policy for table "tasks"',
+  'no miembro: el turno a un lector ajeno da el error de RLS, no el nombre ni el acceso'
 );
 reset role;
 

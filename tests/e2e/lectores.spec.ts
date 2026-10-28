@@ -144,6 +144,10 @@ test("web: un editor cambia accesos, el turno solo se ofrece a editores y no se 
   await expect(
     page.getByText(/tiene tareas abiertas en su turno/),
   ).toContainText(task.key);
+  // El cambio rechazado no se queda en pantalla.
+  await expect(page.getByLabel(`Acceso de ${team.b.name}`)).toHaveValue(
+    "editor",
+  );
 
   await page.getByLabel(`Acceso de ${lector.name}`).selectOption("editor");
   await expect(page.getByText("Acceso actualizado")).toBeVisible();
@@ -362,4 +366,37 @@ test("MCP: el lector lee y cada escritura responde que su acceso es de solo lect
   expect(pass.isError).toBe(true);
   expect(toolText(pass)).toContain("solo lectura: no puede tener el turno");
   await editor.close();
+});
+
+test("web: si a alguien lo bajan a lector con la página abierta, sus cambios no se pierden en silencio", async ({
+  page,
+}) => {
+  const team = await createTeam();
+  const task = await seedTask(team, {
+    title: "Se mueve sin permiso",
+    turnUserId: team.a.id,
+  });
+  await signInFast(page, team.b.email, `/p/${team.key}/t/${task.key}`);
+  const status = panel(page).getByLabel("Estado");
+  await expect(status).toBeVisible();
+
+  // Un editor lo baja a lector mientras b tiene el detalle abierto.
+  const admin = adminClient();
+  const { error } = await admin
+    .from("project_members")
+    .update({ acceso: "lector" })
+    .eq("project_id", team.projectId)
+    .eq("user_id", team.b.id);
+  expect(error).toBeNull();
+
+  await status.selectOption("en_proceso");
+  await expect(
+    page.getByText(`Tu acceso a ${team.key} es de solo lectura.`),
+  ).toBeVisible();
+  const { data } = await admin
+    .from("tasks")
+    .select("status")
+    .eq("id", task.id)
+    .single();
+  expect(data?.status).toBe("por_hacer");
 });

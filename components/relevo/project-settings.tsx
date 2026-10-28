@@ -9,7 +9,7 @@ import {
   Trash2,
   UserMinus,
 } from "lucide-react";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,11 +33,18 @@ type Result = { ok: true } | { ok: false; error: string };
 
 function useRun() {
   const [pending, start] = useTransition();
-  const run = (fn: () => Promise<Result>, ok: string, after?: () => void) =>
+  const run = (
+    fn: () => Promise<Result>,
+    ok: string,
+    after?: () => void,
+    failed?: () => void,
+  ) =>
     start(async () => {
       const r = await fn();
-      if (!r.ok) toast.error(r.error);
-      else {
+      if (!r.ok) {
+        toast.error(r.error);
+        failed?.();
+      } else {
         toast.success(ok);
         after?.();
       }
@@ -128,7 +135,14 @@ export function MemberList({
       className="flex flex-col divide-y rounded-lg border bg-card"
     >
       {members.map((m) => (
-        <MemberRow key={m.id} ctx={ctx} member={m} me={me} canEdit={canEdit} />
+        // La clave incluye el acceso: si cambia en el servidor, la fila arranca con el valor nuevo.
+        <MemberRow
+          key={`${m.id}-${m.acceso}`}
+          ctx={ctx}
+          member={m}
+          me={me}
+          canEdit={canEdit}
+        />
       ))}
     </ul>
   );
@@ -146,6 +160,8 @@ function MemberRow({
   canEdit: boolean;
 }) {
   const [pending, run] = useRun();
+  // Controlado: si la base rechaza el cambio (último editor, turnos abiertos), vuelve al real.
+  const [acceso, setAcceso] = useState(member.acceso);
   return (
     <li
       aria-label={member.name}
@@ -164,20 +180,19 @@ function MemberRow({
         <select
           aria-label={`Acceso de ${member.name}`}
           className={SMALL_SELECT}
-          defaultValue={member.acceso}
-          key={member.acceso}
+          value={acceso}
           disabled={pending}
-          onChange={(e) =>
+          onChange={(e) => {
+            const next = e.target.value as Access;
+            setAcceso(next);
             run(
               () =>
-                changeMemberAccess({
-                  ...ctx,
-                  userId: member.id,
-                  acceso: e.target.value as Access,
-                }),
+                changeMemberAccess({ ...ctx, userId: member.id, acceso: next }),
               "Acceso actualizado",
-            )
-          }
+              undefined,
+              () => setAcceso(member.acceso),
+            );
+          }}
         >
           {ACCESSES.map((a) => (
             <option key={a} value={a}>

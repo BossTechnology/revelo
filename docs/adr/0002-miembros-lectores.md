@@ -34,7 +34,7 @@ La opción 1 con la variante a), elegidas por Henry el 28 de octubre de 2026. El
 - Solo un editor suma miembros, cambia el acceso de cualquiera o quita a alguien. No hay rol de dueño aparte.
 - Un proyecto nunca se queda sin editor: no se puede quitar ni bajar al último.
 - Solo un editor puede tener el turno. La base rechaza pasárselo a un lector, y rechaza bajar a lector o quitar a alguien que tiene tareas abiertas en su turno (el mensaje las lista).
-- Al crear un proyecto, quien lo crea queda como editor y cada persona sumada elige Editor o Lector (por defecto Lector).
+- Al crear un proyecto, quien lo crea queda como editor y cada persona sumada elige Editor o Lector (por defecto Lector). Nadie viene marcado de antemano (antes venían todas las personas): con gente de afuera invitada, marcarlas por defecto las sumaría por accidente a cada proyecto nuevo.
 
 **Fuera del proyecto**
 - `profiles`: ves el tuyo y los de quienes comparten algún proyecto contigo. Si eres editor de al menos un proyecto, ves todos (hace falta para encontrar a un recién invitado en "Agregar miembro").
@@ -50,6 +50,6 @@ Se eligió a) sobre b) porque así las reglas viven en el RLS, que aplica igual 
 
 ## Consecuencias
 - Henry puede invitar a una persona de afuera a un solo proyecto sin que vea los demás, los perfiles ajenos ni pueda mover nada.
-- Sumar a alguien al crear un proyecto cuesta un clic más (elegir Editor).
+- Sumar a alguien al crear un proyecto cuesta dos clics más: marcarlo y, si va a escribir, elegir Editor.
 - Fuera de alcance por ahora: lector que comenta, invitar desde la web (sigue siendo `scripts/invite.mts`, lo corre Henry), un rol de dueño o administrador, y avisos por correo al sumar a alguien o cambiar su acceso.
 - Vigilar: toda tabla o función nueva que escriba tiene que pasar por `puede_editar()`; los guards lo hacen fallar en CI si se olvida.

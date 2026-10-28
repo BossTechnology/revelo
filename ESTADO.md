@@ -12,6 +12,7 @@
   - MCP: `requireEditor()` antes de cada herramienta de escritura ("Tu acceso a X es de solo lectura."); en `adjuntar` corta antes de subir el archivo. `resolveTurn` solo ofrece editores.
   - Web: etiqueta "Solo lectura", sin controles de escritura para el lector (sí descarga), lista de miembros con acceso en ajustes (cambiar, quitar, sumar con acceso), "Salir del proyecto", selector Editor/Lector en nuevo proyecto (visible solo para editores), turno solo entre editores.
   - E2E `lectores.spec.ts`: web, API de Supabase directa, `finalize` y MCP.
+  - Revisión (`/code-review`, 6 hallazgos) atendida en el PR 15: `guard_task_turn` ya no revela nombre ni acceso a quien no es editor (RLS rechaza primero); guard que rechaza políticas de escritura con OR; las acciones de la web detectan 0 filas y responden "Tu acceso a X es de solo lectura."; el select de acceso vuelve al valor real si la base rechaza; `canCreateProjects` salió de `getViewer`; casillas sin marcar anotadas en la ADR y el PLAN.
 - 2026-10-28: diseño de la Fase 8 alineado con Henry (grill de 20 preguntas). ADR `docs/adr/0002-miembros-lectores.md`, Fase 8 en `PLAN.md` y términos Acceso, Editor y Lector en `CONTEXT.md`.
 - 2026-10-12: importación de TBT ejecutada en producción por Henry: Fuerza de Fuerza → TBT con 4 categorías (TBT-1 a TBT-8, 22 respuestas, 24 adjuntos) y Pinch → JobRun (JR), con Henry y Federico como miembros.
 - PR #13 mergeado (seed y PLAN con 4 categorías).

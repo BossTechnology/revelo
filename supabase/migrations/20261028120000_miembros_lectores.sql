@@ -167,6 +167,9 @@ create trigger project_members_guard before update or delete on public.project_m
 -- ---------------------------------------------------------------------------
 -- En un update el proyecto es el de old: guard_task_update() descarta cualquier cambio de
 -- project_id, y este trigger corre antes que ese.
+-- El WITH CHECK de RLS se evalúa después de los triggers BEFORE: si quien escribe no es editor,
+-- el trigger no mira nada y deja que RLS lo rechace (si no, revelaría el nombre y el acceso de
+-- un miembro de un proyecto ajeno). 'sistema' (seed, scripts con la secret key) sí se valida.
 create function public.guard_task_turn()
 returns trigger
 language plpgsql
@@ -174,14 +177,18 @@ security definer
 set search_path = ''
 as $$
 declare
+  project uuid := case when tg_op = 'INSERT' then new.project_id else old.project_id end;
   lector_name text;
 begin
+  if public.request_via() <> 'sistema' and not public.puede_editar(project) then
+    return new;
+  end if;
   if new.turn = 'persona'
      and (tg_op = 'INSERT' or new.turn_user_id is distinct from old.turn_user_id) then
     select pr.display_name into lector_name
     from public.project_members m
     join public.profiles pr on pr.id = m.user_id
-    where m.project_id = case when tg_op = 'INSERT' then new.project_id else old.project_id end
+    where m.project_id = project
       and m.user_id = new.turn_user_id
       and m.acceso = 'lector';
     if found then
