@@ -20,7 +20,7 @@ import {
   TitleField,
   TurnSelect,
 } from "@/components/relevo/task/task-controls";
-import { relativeAge, turnInfo } from "@/lib/relevo/domain";
+import { COLUMNS, relativeAge, turnInfo } from "@/lib/relevo/domain";
 import { getBoard, getTaskDetail, getViewer } from "@/lib/relevo/queries";
 import { cn } from "@/lib/utils";
 
@@ -86,7 +86,9 @@ export default async function TaskPanel({
   const ctx = { taskId: task.id, projectKey };
   const name = (id: string | null) =>
     id ? (viewer.profiles.get(id)?.display_name ?? "Alguien") : "Sistema";
-  const members = board.project.memberIds
+  const canEdit = board.project.editorIds.includes(viewer.userId);
+  // Solo los editores pueden tener el turno (Fase 8).
+  const members = board.project.editorIds
     .map((id) => viewer.profiles.get(id))
     .filter((p) => p !== undefined)
     .map((p) => ({ id: p.id, name: p.display_name }));
@@ -130,7 +132,7 @@ export default async function TaskPanel({
 
       <div className="flex flex-col gap-6 px-5 py-4">
         <div className="flex flex-col gap-3">
-          <TitleField ctx={ctx} title={task.title} />
+          <TitleField ctx={ctx} title={task.title} readOnly={!canEdit} />
           <TurnChip turn={turn} className="w-fit" />
           <p className="text-xs text-muted-foreground">
             Creada por {name(task.created_by)} vía {VIA_LABEL[task.created_via]}{" "}
@@ -138,31 +140,55 @@ export default async function TaskPanel({
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatusSelect ctx={ctx} status={task.status} />
-          <TurnSelect
-            ctx={ctx}
-            current={currentTurn}
-            members={members}
-            me={viewer.userId}
-            closed={task.status === "terminado"}
-          />
-          <DueDateField ctx={ctx} due={task.due_date} />
-          {categories.length > 0 && (
-            <CategorySelect
+        {canEdit ? (
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatusSelect ctx={ctx} status={task.status} />
+            <TurnSelect
               ctx={ctx}
-              current={task.category_id}
-              categories={categories.map((c) => ({
-                id: c.id,
-                name: c.name,
-                archived: c.archived_at !== null,
-              }))}
+              current={currentTurn}
+              members={members}
+              me={viewer.userId}
+              closed={task.status === "terminado"}
             />
-          )}
-        </div>
+            <DueDateField ctx={ctx} due={task.due_date} />
+            {categories.length > 0 && (
+              <CategorySelect
+                ctx={ctx}
+                current={task.category_id}
+                categories={categories.map((c) => ({
+                  id: c.id,
+                  name: c.name,
+                  archived: c.archived_at !== null,
+                }))}
+              />
+            )}
+          </div>
+        ) : (
+          <dl className="grid gap-4 sm:grid-cols-3">
+            <ReadOnlyField
+              label="Estado"
+              value={
+                COLUMNS.find((c) => c.status === task.status)?.label ?? "—"
+              }
+            />
+            <ReadOnlyField
+              label="Fecha límite"
+              value={task.due_date ?? "Sin fecha"}
+            />
+            {categories.length > 0 && (
+              <ReadOnlyField
+                label="Categoría"
+                value={
+                  categories.find((c) => c.id === task.category_id)?.name ??
+                  "Sin categoría"
+                }
+              />
+            )}
+          </dl>
+        )}
 
         <Section title="Instrucciones">
-          <BodyEditor ctx={ctx} body={task.body} />
+          <BodyEditor ctx={ctx} body={task.body} readOnly={!canEdit} />
         </Section>
 
         <Section title={`Adjuntos (${attachments.length})`}>
@@ -214,7 +240,7 @@ export default async function TaskPanel({
               ))}
             </ul>
           )}
-          <AttachmentUpload ctx={ctx} />
+          {canEdit && <AttachmentUpload ctx={ctx} />}
         </Section>
 
         <Section title={`Hilo (${replies.length})`}>
@@ -255,9 +281,11 @@ export default async function TaskPanel({
                   <span className="text-muted-foreground">
                     {relativeAge(r.created_at)}
                   </span>
-                  <span className="ml-auto">
-                    <ReplyMark ctx={ctx} replyId={r.id} mark={r.mark} />
-                  </span>
+                  {canEdit && (
+                    <span className="ml-auto">
+                      <ReplyMark ctx={ctx} replyId={r.id} mark={r.mark} />
+                    </span>
+                  )}
                 </div>
                 <div className="prose-relevo text-sm">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -267,7 +295,7 @@ export default async function TaskPanel({
               </li>
             ))}
           </ol>
-          <ReplyForm ctx={ctx} />
+          {canEdit && <ReplyForm ctx={ctx} />}
         </Section>
 
         <Section title="Actividad en Git">
@@ -339,6 +367,16 @@ export default async function TaskPanel({
         </Section>
       </div>
     </aside>
+  );
+}
+
+/** Lo que un lector ve en lugar de los controles de estado, fecha y categoría. */
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <dt className="text-sm font-medium">{label}</dt>
+      <dd className="h-9 content-center text-sm">{value}</dd>
+    </div>
   );
 }
 

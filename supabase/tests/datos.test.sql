@@ -64,8 +64,8 @@ insert into auth.users (id, email, aud, role, raw_user_meta_data) values
 
 insert into public.projects (id, name, key, color, company_id) values
   ('0000000b-0000-4000-8000-000000000001', 'Prueba', 'PRB', '#000000', (select id from public.companies where name = 'Boss'));
-insert into public.project_members (project_id, user_id) values
-  ('0000000b-0000-4000-8000-000000000001', '0000000a-0000-4000-8000-000000000001');
+insert into public.project_members (project_id, user_id, acceso) values
+  ('0000000b-0000-4000-8000-000000000001', '0000000a-0000-4000-8000-000000000001', 'editor');
 
 -- Como miembro (vía web), para que corran los triggers igual que en la app.
 set local role authenticated;

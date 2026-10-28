@@ -3,6 +3,13 @@ import type { Database } from "@/lib/supabase/database.types";
 export type TaskType = Database["public"]["Enums"]["task_type"];
 export type TaskStatus = Database["public"]["Enums"]["task_status"];
 export type TurnKind = Database["public"]["Enums"]["turn_kind"];
+export type Access = Database["public"]["Enums"]["member_access"];
+
+/** Acceso de un miembro (Fase 8). Lector es el de por defecto: quien se equivoca da menos. */
+export const ACCESS_LABEL: Record<Access, string> = {
+  editor: "Editor",
+  lector: "Lector",
+};
 
 /** Tipos de tarea con su etiqueta y el color del canvas (claro / oscuro). */
 export const TASK_TYPES: Record<

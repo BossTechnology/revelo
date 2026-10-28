@@ -93,6 +93,17 @@ function groupByCompany<T extends { id: string }>(
   );
 }
 
+/** Crear proyectos exige ser editor de alguno (Fase 8): solo así se ofrece el diálogo. */
+export async function canCreateProjects(userId: string) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("project_members")
+    .select("project_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("acceso", "editor");
+  return (count ?? 0) > 0;
+}
+
 /** Empresas que ve la persona: las sugiere el diálogo de nuevo proyecto. */
 export async function getCompanies() {
   const supabase = await createClient();
@@ -234,7 +245,7 @@ export async function getBoard(projectKey: string) {
   const { data: project } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, companies(name), project_repos(owner, repo), project_members(user_id), categories(id, name, position, archived_at)",
+      "id, name, key, color, companies(name), project_repos(owner, repo), project_members(user_id, acceso), categories(id, name, position, archived_at)",
     )
     .eq("key", projectKey)
     .maybeSingle();
@@ -260,7 +271,10 @@ export async function getBoard(projectKey: string) {
       color: project.color,
       company: project.companies.name,
       repos: project.project_repos.map((r) => `${r.owner}/${r.repo}`),
-      memberIds: project.project_members.map((m) => m.user_id),
+      // Solo un editor escribe y puede tener el turno (Fase 8).
+      editorIds: project.project_members
+        .filter((m) => m.acceso === "editor")
+        .map((m) => m.user_id),
       categories: sortCategories(project.categories),
       lastActivity: activity.get(project.id)?.text ?? null,
     },

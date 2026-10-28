@@ -12,6 +12,9 @@ Términos del proyecto y su significado exacto. Úsalos en código, commits, doc
 | Tarea | Handoff, pregunta, decisión o pendiente externo, con turno, hilo y adjuntos. Clave `PREFIJO-N`. | `tasks` |
 | Turno | Quién tiene que mover la tarea: una persona, un tercero o nadie (terminada). | `tasks.turn` |
 | Handoff | Paquete de trabajo que una persona entrega a otra; solo una persona lo cierra, desde la web. | `task_type` |
+| Acceso | Lo que un miembro puede hacer en un proyecto: editor o lector. Es por proyecto, no por persona. | `project_members.acceso` |
+| Editor | Miembro que lee y escribe en el proyecto, gestiona miembros y puede tener el turno. | `acceso = 'editor'`, `puede_editar()` |
+| Lector | Miembro que solo ve el proyecto (tablero, hilos, historial, adjuntos); no escribe nada ni puede tener el turno. Acceso por defecto al sumar a alguien. | `acceso = 'lector'`, etiqueta "Solo lectura" |
 
 ## Fuera de alcance
 Lo que este proyecto explícitamente NO hace.
@@ -19,3 +22,4 @@ Lo que este proyecto explícitamente NO hace.
 ## Decisiones clave
 Enlaces a ADRs en `docs/adr/`.
 - [0001 — Empresas encima de los proyectos y categorías dentro](docs/adr/0001-empresas-y-categorias.md)
+- [0002 — Miembros lectores por proyecto](docs/adr/0002-miembros-lectores.md)

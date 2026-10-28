@@ -6,6 +6,7 @@ import { ProjectMark } from "@/components/relevo/chips";
 import { NewProjectDialog } from "@/components/relevo/new-project-dialog";
 import { THIRD_PARTY_COLOR } from "@/lib/relevo/domain";
 import {
+  canCreateProjects,
   getCompanies,
   getProjectsOverview,
   getViewer,
@@ -23,6 +24,7 @@ export default async function ProjectsPage() {
   ]);
   const people = [...(viewer?.profiles.values() ?? [])];
   const me = viewer?.userId;
+  const canCreate = me ? await canCreateProjects(me) : false;
 
   const totals = new Map<string, number>();
   let thirdParty = 0;
@@ -63,11 +65,13 @@ export default async function ProjectsPage() {
             />
           </div>
         )}
-        <NewProjectDialog
-          people={people.map((p) => ({ id: p.id, name: p.display_name }))}
-          me={me ?? ""}
-          companies={companyNames.map((c) => c.name)}
-        />
+        {canCreate && (
+          <NewProjectDialog
+            people={people.map((p) => ({ id: p.id, name: p.display_name }))}
+            me={me ?? ""}
+            companies={companyNames.map((c) => c.name)}
+          />
+        )}
       </header>
 
       {projects.length === 0 ? (

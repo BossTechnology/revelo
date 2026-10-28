@@ -15,6 +15,7 @@ import {
   findProject,
   findTask,
   projectCategories,
+  requireEditor,
   resolveTurn,
   ToolError,
   userClient,
@@ -486,6 +487,7 @@ export function registerTools(server: McpServer) {
       categoria?: string;
     }>(async (a, db, me) => {
       const project = await findProject(db, a.proyecto);
+      await requireEditor(db, project);
       const turn = await resolveTurn(db, project.id, me, a.turno);
       const category = a.categoria?.trim()
         ? await findCategory(db, project.id, a.categoria)
@@ -533,6 +535,7 @@ export function registerTools(server: McpServer) {
       marca?: "normal" | "oficial" | "firmada";
     }>(async ({ id, texto, marca }, db, me) => {
       const t = await findTask(db, id);
+      await requireEditor(db, { id: t.project_id, key: t.projects.key });
       const { error } = await db.from("replies").insert({
         task_id: t.id,
         body: texto,
@@ -563,6 +566,7 @@ export function registerTools(server: McpServer) {
     tool<{ id: string; nombre: string; contenido_base64: string }>(
       async ({ id, nombre, contenido_base64 }, db, me) => {
         const t = await findTask(db, id);
+        await requireEditor(db, { id: t.project_id, key: t.projects.key });
         const bytes = Buffer.from(contenido_base64, "base64");
         if (bytes.byteLength > 52_428_800)
           throw new ToolError("El archivo pasa de 50 MB.");
@@ -599,6 +603,7 @@ export function registerTools(server: McpServer) {
     tool<{ id: string; estado: "por_hacer" | "en_proceso" | "terminado" }>(
       async ({ id, estado }, db, me) => {
         const t = await findTask(db, id);
+        await requireEditor(db, { id: t.project_id, key: t.projects.key });
         const { data: cur } = await db
           .from("tasks")
           .select("turn")
@@ -637,6 +642,7 @@ export function registerTools(server: McpServer) {
     },
     tool<{ id: string; a: string }>(async ({ id, a }, db, me) => {
       const t = await findTask(db, id);
+      await requireEditor(db, { id: t.project_id, key: t.projects.key });
       if (t.status === "terminado")
         throw new ToolError(
           `${t.key} está terminada; muévela con cambiar_estado para reabrirla.`,

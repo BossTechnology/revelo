@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createProject } from "@/lib/relevo/actions";
+import { ACCESS_LABEL, type Access } from "@/lib/relevo/domain";
 import { cn } from "@/lib/utils";
 
 const COLORS = [
@@ -54,7 +55,10 @@ export function NewProjectDialog({
         key: String(form.get("key") ?? ""),
         color,
         company: String(form.get("company") ?? ""),
-        memberIds: form.getAll("members").map(String),
+        members: form.getAll("members").map((id) => ({
+          id: String(id),
+          acceso: (form.get(`acceso-${id}`) ?? "lector") as Access,
+        })),
       });
       if (!result.ok) {
         setError(result.error);
@@ -151,20 +155,39 @@ export function NewProjectDialog({
           {others.length > 0 && (
             <fieldset className="flex flex-col gap-1.5">
               <legend className="mb-1.5 text-sm font-medium">
-                Miembros (además de ti)
+                Miembros (además de ti, que quedas como editor)
               </legend>
-              {others.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="members"
-                    value={p.id}
-                    defaultChecked
-                    className="size-4 accent-primary"
-                  />
-                  {p.name}
-                </label>
-              ))}
+              <p className="text-xs text-muted-foreground">
+                Un lector ve el proyecto pero no cambia nada ni puede tener el
+                turno.
+              </p>
+              <div className="flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-1">
+                {others.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2 text-sm">
+                    <label className="flex flex-1 items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="members"
+                        value={p.id}
+                        className="size-4 accent-primary"
+                      />
+                      {p.name}
+                    </label>
+                    <select
+                      name={`acceso-${p.id}`}
+                      aria-label={`Acceso de ${p.name}`}
+                      defaultValue="lector"
+                      className="h-8 rounded-md border border-input bg-transparent px-2 text-sm dark:bg-input/30"
+                    >
+                      {(Object.keys(ACCESS_LABEL) as Access[]).map((a) => (
+                        <option key={a} value={a}>
+                          {ACCESS_LABEL[a]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
             </fieldset>
           )}
           {error && (

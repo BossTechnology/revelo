@@ -382,6 +382,19 @@ Relevo deja de ser solo de Boss: Henry y Federico coordinan también Fuerza de F
 
 **Hecho cuando:** los proyectos aparecen agrupados por empresa; TBT tiene sus 4 categorías con el historial del Doc importado; el tablero filtra por categoría; una tarea no puede quedar con la categoría de otro proyecto (test de base de datos); un usuario no ve empresas ni categorías de proyectos donde no es miembro; y los tests pasan.
 
+### Fase 8: Miembros lectores
+Personas de afuera que ven un solo proyecto sin poder cambiar nada. Decisión en `docs/adr/0002-miembros-lectores.md`.
+- **Acceso:** `project_members.acceso` (`editor` | `lector`, por defecto `lector`). La migración deja a los miembros actuales como `editor`. `puede_editar(project_id)` reemplaza a `is_member()` en toda política de insert, update y delete (tareas, respuestas, adjuntos, Storage, categorías, repos, miembros, proyecto); la lectura sigue con `is_member()`.
+- **Miembros:** solo un editor suma, cambia el acceso o quita miembros (políticas de update y delete en `project_members` con un trigger que valida las reglas). Un proyecto nunca se queda sin editor. Cualquiera puede salirse si no es el último editor.
+- **Turno:** solo un editor puede tenerlo. Se rechaza pasárselo a un lector y bajar o quitar a alguien con tareas abiertas en su turno (el mensaje las lista).
+- **Fuera del proyecto:** `profiles` se ve si compartes un proyecto con esa persona, o todos si eres editor de alguno. `companies` la renombra solo un editor de algún proyecto de la empresa. `create_project` exige ser editor (de la empresa si ya existe, de cualquier proyecto si es nueva); quien crea queda como editor y cada persona sumada elige Editor o Lector.
+- **MCP:** el lector usa las herramientas de lectura; las de escritura responden "Tu acceso a <PROYECTO> es de solo lectura".
+- **Web:** etiqueta "Solo lectura" en el encabezado del proyecto; sin controles de escritura (sí descarga adjuntos); en los ajustes, la lista de miembros sin poder tocarla, con el acceso de cada persona y el cambio de acceso para editores; selector Editor/Lector en el diálogo de nuevo proyecto, sin nadie marcado de antemano (marcar a todas las personas sumaría a la gente de afuera a cada proyecto nuevo); botón "Salir del proyecto".
+- **Guards:** uno descubre en `pg_policies` (`public` y `storage`) toda política de insert, update o delete y exige `puede_editar()`, salvo una lista explícita (`profiles`). Otro descubre las funciones `security definer` ejecutables por `authenticated` y falla con una fuera de la lista revisada. Los dos se ven fallar una vez.
+- **Fuera de alcance:** lector que comenta, invitar desde la web, rol de dueño y avisos por correo.
+
+**Hecho cuando:** un lector ve todo su proyecto en la web y por el MCP, pero nada de otros proyectos ni perfiles ajenos; todo intento de escritura de un lector falla por la web, por el MCP y contra la API de Supabase directamente; los dos guards pasan y se vieron fallar una vez; no se puede dejar un proyecto sin editor ni un turno en manos de un lector; Henry invita a una persona de afuera como lectora en producción y lo comprueba; y los tests pasan.
+
 ---
 
 ## 10. Tests
@@ -461,7 +474,7 @@ Si algún paso necesitó copiar y pegar entre ellos, el MVP no está listo.
 - [x] Clientes MCP revocables desde `/ajustes/conexiones`.
 - [x] Rate limit en `/api/mcp` y en el envío de enlaces mágicos.
 - [x] Secretos rotables documentados en `RUNBOOK.md`.
-- [x] Revisión de RLS con el advisor de seguridad de Supabase sin alertas. *Revisado el 8 de octubre de 2026: ninguna tabla sin RLS. Quedan 5 avisos aceptados: `create_project`, `is_member`, `task_project` y `mcp_hit` son `SECURITY DEFINER` ejecutables por `authenticated` a propósito (las políticas y el MCP las llaman como el usuario), y la protección de contraseñas filtradas no aplica porque solo se entra con Google.*
+- [x] Revisión de RLS con el advisor de seguridad de Supabase sin alertas. *Revisado el 8 de octubre de 2026: ninguna tabla sin RLS. Quedan 5 avisos aceptados: `create_project`, `is_member`, `task_project` y `mcp_hit` son `SECURITY DEFINER` ejecutables por `authenticated` a propósito (las políticas y el MCP las llaman como el usuario), y la protección de contraseñas filtradas no aplica porque solo se entra con Google. Desde la Fase 8, la lista revisada de funciones `SECURITY DEFINER` vive en el guard de `supabase/tests/lectores.test.sql` (suma `puede_editar` e `is_company_member`).*
 
 ---
 
