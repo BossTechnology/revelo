@@ -63,11 +63,13 @@ export default async function ProjectsPage() {
             />
           </div>
         )}
-        <NewProjectDialog
-          people={people.map((p) => ({ id: p.id, name: p.display_name }))}
-          me={me ?? ""}
-          companies={companyNames.map((c) => c.name)}
-        />
+        {viewer?.canCreateProjects && (
+          <NewProjectDialog
+            people={people.map((p) => ({ id: p.id, name: p.display_name }))}
+            me={me ?? ""}
+            companies={companyNames.map((c) => c.name)}
+          />
+        )}
       </header>
 
       {projects.length === 0 ? (

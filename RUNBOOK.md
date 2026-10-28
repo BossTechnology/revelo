@@ -25,7 +25,9 @@ NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SECRET_KEY=<secret> \
 … node scripts/invite.mts persona@boss.technology --nombre "Nombre" --rol desarrollo --sin-correo
 ```
 
-Comprobar: la persona aparece en Ajustes del proyecto → Miembros → Agregar. Después hay que sumarla a cada proyecto desde ahí.
+Comprobar: la persona aparece en Ajustes del proyecto → Miembros → Agregar. Después hay que sumarla a cada proyecto desde ahí, con acceso **Editor** o **Lector** (por defecto Lector).
+
+Alguien de afuera (un cliente) se suma como **Lector** a un solo proyecto: ve ese proyecto (tablero, hilos, historial, adjuntos) y los perfiles de sus miembros, nada más, y no puede cambiar nada (docs/adr/0002). Comprobar entrando con su cuenta: el proyecto muestra "Solo lectura" y no aparece "Nueva tarea".
 
 ## Revocar un cliente de IA (MCP)
 

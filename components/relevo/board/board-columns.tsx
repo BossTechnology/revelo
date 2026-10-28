@@ -101,10 +101,13 @@ export function BoardColumns({
   projectKey,
   cards,
   me,
+  canEdit,
 }: {
   projectKey: string;
   cards: CardView[];
   me: string;
+  /** Un lector (Fase 8) ve el tablero pero no mueve tarjetas. */
+  canEdit: boolean;
 }) {
   const params = useSearchParams();
   const filter = params.get("filtro") ?? "todo";
@@ -176,6 +179,7 @@ export function BoardColumns({
                   card={c}
                   projectKey={projectKey}
                   selected={c.key === selectedKey}
+                  canEdit={canEdit}
                 />
               ))}
             </Column>
@@ -237,13 +241,15 @@ function DraggableCard({
   card,
   projectKey,
   selected,
+  canEdit,
 }: {
   card: CardView;
   projectKey: string;
   selected: boolean;
+  canEdit: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: card.id });
+    useDraggable({ id: card.id, disabled: !canEdit });
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined;
@@ -270,27 +276,29 @@ function DraggableCard({
             Te toca
           </span>
         )}
-        <button
-          type="button"
-          {...listeners}
-          {...attributes}
-          aria-label={`Mover ${card.key}`}
-          className="relative z-10 shrink-0 cursor-grab rounded p-1 text-muted-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring active:cursor-grabbing"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-4"
-            fill="currentColor"
-            aria-hidden
+        {canEdit && (
+          <button
+            type="button"
+            {...listeners}
+            {...attributes}
+            aria-label={`Mover ${card.key}`}
+            className="relative z-10 shrink-0 cursor-grab rounded p-1 text-muted-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring active:cursor-grabbing"
           >
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              className="size-4"
+              fill="currentColor"
+              aria-hidden
+            >
+              <circle cx="9" cy="6" r="1.5" />
+              <circle cx="15" cy="6" r="1.5" />
+              <circle cx="9" cy="12" r="1.5" />
+              <circle cx="15" cy="12" r="1.5" />
+              <circle cx="9" cy="18" r="1.5" />
+              <circle cx="15" cy="18" r="1.5" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -366,7 +374,7 @@ function DraggableCard({
           )}
         </div>
       )}
-      {card.git?.merged && card.status !== "terminado" && (
+      {canEdit && card.git?.merged && card.status !== "terminado" && (
         <MergedPrompt card={card} projectKey={projectKey} />
       )}
 

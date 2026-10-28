@@ -21,11 +21,18 @@ select ok(has_function_privilege('service_role', 'public.set_attachment_hashes(u
 -- ---------------------------------------------------------------------------
 -- create_project: quien lo crea queda como miembro
 -- ---------------------------------------------------------------------------
+-- Crear un proyecto exige ser editor de alguno (Fase 8).
+insert into public.projects (id, name, key, color, company_id) values
+  ('0000000c-0000-4000-8000-0000000000a1', 'Base', 'BAS', '#000000', (select id from public.companies where name = 'Boss'));
+insert into public.project_members (project_id, user_id, acceso) values
+  ('0000000c-0000-4000-8000-0000000000a1', '0000000c-0000-4000-8000-000000000001', 'editor');
+
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "0000000c-0000-4000-8000-000000000001", "role": "authenticated"}';
 
 select is(
-  (public.create_project('Nuevo', 'nvo', '#000000', 'Empresa de prueba', array['0000000c-0000-4000-8000-000000000002'::uuid])).key,
+  (public.create_project('Nuevo', 'nvo', '#000000', 'Empresa de prueba',
+                         lector_ids => array['0000000c-0000-4000-8000-000000000002'::uuid])).key,
   'NVO', 'create_project normaliza el prefijo a mayúsculas'
 );
 select results_eq(

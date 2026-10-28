@@ -29,11 +29,18 @@ export const getViewer = cache(async () => {
     .order("display_name");
   const all = (profiles ?? []) as ProfileLite[];
   const me = all.find((p) => p.id === userId) ?? null;
+  // Crear proyectos exige ser editor de alguno (Fase 8).
+  const { count: editorOf } = await supabase
+    .from("project_members")
+    .select("project_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("acceso", "editor");
   return {
     userId,
     email: data.claims.email as string | undefined,
     me,
     profiles: new Map(all.map((p) => [p.id, p])),
+    canCreateProjects: (editorOf ?? 0) > 0,
   };
 });
 
@@ -234,7 +241,7 @@ export async function getBoard(projectKey: string) {
   const { data: project } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, companies(name), project_repos(owner, repo), project_members(user_id), categories(id, name, position, archived_at)",
+      "id, name, key, color, companies(name), project_repos(owner, repo), project_members(user_id, acceso), categories(id, name, position, archived_at)",
     )
     .eq("key", projectKey)
     .maybeSingle();
@@ -260,7 +267,10 @@ export async function getBoard(projectKey: string) {
       color: project.color,
       company: project.companies.name,
       repos: project.project_repos.map((r) => `${r.owner}/${r.repo}`),
-      memberIds: project.project_members.map((m) => m.user_id),
+      // Solo un editor escribe y puede tener el turno (Fase 8).
+      editorIds: project.project_members
+        .filter((m) => m.acceso === "editor")
+        .map((m) => m.user_id),
       categories: sortCategories(project.categories),
       lastActivity: activity.get(project.id)?.text ?? null,
     },

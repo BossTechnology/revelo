@@ -213,22 +213,32 @@ export function DueDateField({ ctx, due }: { ctx: Ctx; due: string | null }) {
   );
 }
 
-export function TitleField({ ctx, title }: { ctx: Ctx; title: string }) {
+export function TitleField({
+  ctx,
+  title,
+  readOnly = false,
+}: {
+  ctx: Ctx;
+  title: string;
+  readOnly?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
   const [pending, run] = useAction();
   if (!editing) {
     return (
       <div className="group flex items-start gap-2">
         <h2 className="text-lg leading-snug font-semibold">{title}</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 shrink-0"
-          aria-label="Editar título"
-          onClick={() => setEditing(true)}
-        >
-          <Pencil className="size-3.5" aria-hidden />
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 shrink-0"
+            aria-label="Editar título"
+            onClick={() => setEditing(true)}
+          >
+            <Pencil className="size-3.5" aria-hidden />
+          </Button>
+        )}
       </div>
     );
   }
@@ -261,7 +271,15 @@ export function TitleField({ ctx, title }: { ctx: Ctx; title: string }) {
   );
 }
 
-export function BodyEditor({ ctx, body }: { ctx: Ctx; body: string }) {
+export function BodyEditor({
+  ctx,
+  body,
+  readOnly = false,
+}: {
+  ctx: Ctx;
+  body: string;
+  readOnly?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
   const [pending, run] = useAction();
   let checkbox = -1;
@@ -318,7 +336,7 @@ export function BodyEditor({ ctx, body }: { ctx: Ctx; body: string }) {
                   <input
                     type="checkbox"
                     checked={!!checked}
-                    disabled={pending}
+                    disabled={pending || readOnly}
                     aria-label="Marcar punto del report-back"
                     className="mr-2 size-4 translate-y-0.5 accent-primary"
                     onChange={() =>
@@ -340,15 +358,17 @@ export function BodyEditor({ ctx, body }: { ctx: Ctx; body: string }) {
       ) : (
         <p className="text-sm text-muted-foreground">Sin instrucciones.</p>
       )}
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-fit"
-        onClick={() => setEditing(true)}
-      >
-        <Pencil className="size-3.5" aria-hidden />
-        Editar instrucciones
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          onClick={() => setEditing(true)}
+        >
+          <Pencil className="size-3.5" aria-hidden />
+          Editar instrucciones
+        </Button>
+      )}
     </div>
   );
 }

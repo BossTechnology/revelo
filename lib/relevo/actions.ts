@@ -1,13 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { sanitizeFilename } from "@/lib/attachments/finalize";
 import { installationRepo } from "@/lib/github/app";
 import { parseRepoInput } from "@/lib/github/repo-input";
 import { createClient } from "@/lib/supabase/server";
 
-import type { TaskStatus, TaskType } from "./domain";
+import type { Access, TaskStatus, TaskType } from "./domain";
 
 /**
  * Escrituras del trabajo diario. Todas usan la sesión del usuario: RLS y los triggers
@@ -20,6 +21,7 @@ export type ActionResult<T = undefined> =
 
 const TYPES: TaskType[] = ["handoff", "pregunta", "decision", "externo"];
 const STATUSES: TaskStatus[] = ["por_hacer", "en_proceso", "terminado"];
+const ACCESSES: Access[] = ["editor", "lector"];
 
 /** "u:<uuid>" = una persona, "t:<nombre>" = un tercero. */
 function parseTurn(target: string) {
@@ -63,7 +65,8 @@ export async function createProject(input: {
   key: string;
   color: string;
   company: string;
-  memberIds: string[];
+  /** Cada persona que se suma con su acceso (Fase 8). Quien crea queda como editor. */
+  members: { id: string; acceso: Access }[];
 }): Promise<ActionResult<{ key: string }>> {
   const key = input.key.trim().toUpperCase();
   if (!input.name.trim())
@@ -81,7 +84,12 @@ export async function createProject(input: {
     project_key: key,
     project_color: input.color,
     company_name: input.company.trim(),
-    member_ids: input.memberIds,
+    editor_ids: input.members
+      .filter((m) => m.acceso === "editor")
+      .map((m) => m.id),
+    lector_ids: input.members
+      .filter((m) => m.acceso !== "editor")
+      .map((m) => m.id),
   });
   if (error) return { ok: false, error: friendly(error) };
   revalidatePath("/", "layout");
@@ -341,14 +349,87 @@ export async function addProjectMember(input: {
   projectId: string;
   projectKey: string;
   userId: string;
+  acceso: Access;
 }): Promise<ActionResult> {
+  if (!ACCESSES.includes(input.acceso))
+    return { ok: false, error: "Acceso no válido." };
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("project_members")
-    .insert({ project_id: input.projectId, user_id: input.userId });
+  const { error } = await supabase.from("project_members").insert({
+    project_id: input.projectId,
+    user_id: input.userId,
+    acceso: input.acceso,
+  });
   if (error) return { ok: false, error: friendly(error) };
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+/**
+ * Cambiar el acceso y quitar miembros (Fase 8). RLS deja hacerlo solo a un editor y el trigger
+ * cuida que el proyecto no se quede sin editor ni el turno en manos de un lector. Un cambio que
+ * RLS filtra no da error (0 filas): por eso se pide la fila de vuelta.
+ */
+export async function changeMemberAccess(input: {
+  projectId: string;
+  projectKey: string;
+  userId: string;
+  acceso: Access;
+}): Promise<ActionResult> {
+  if (!ACCESSES.includes(input.acceso))
+    return { ok: false, error: "Acceso no válido." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("project_members")
+    .update({ acceso: input.acceso })
+    .eq("project_id", input.projectId)
+    .eq("user_id", input.userId)
+    .select("user_id");
+  if (error) return { ok: false, error: friendly(error) };
+  if (!data.length)
+    return { ok: false, error: "Solo un editor cambia el acceso." };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function removeProjectMember(input: {
+  projectId: string;
+  projectKey: string;
+  userId: string;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("project_members")
+    .delete()
+    .eq("project_id", input.projectId)
+    .eq("user_id", input.userId)
+    .select("user_id");
+  if (error) return { ok: false, error: friendly(error) };
+  if (!data.length)
+    return { ok: false, error: "Solo un editor quita miembros." };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Cualquiera puede salirse de un proyecto, salvo su último editor. */
+export async function leaveProject(input: {
+  projectId: string;
+  projectKey: string;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  const me = claims?.claims.sub;
+  if (!me) return { ok: false, error: "Hace falta una sesión." };
+  const { data, error } = await supabase
+    .from("project_members")
+    .delete()
+    .eq("project_id", input.projectId)
+    .eq("user_id", me)
+    .select("user_id");
+  if (error) return { ok: false, error: friendly(error) };
+  if (!data.length)
+    return { ok: false, error: "No eres miembro de este proyecto." };
+  revalidatePath("/", "layout");
+  redirect("/");
 }
 
 /** Conecta un repo de cualquier organización (owner/repo) con la instalación de la GitHub App. */

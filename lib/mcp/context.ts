@@ -109,8 +109,23 @@ export async function findCategory(db: Db, projectId: string, name: string) {
 }
 
 /**
- * "a" para pasar el turno: "yo", el nombre de una persona miembro del proyecto, o
- * "tercero:<nombre>" (ej. "tercero:platform team").
+ * Toda herramienta que escribe pasa por aquí antes de tocar nada (Fase 8). RLS ya bloquea al
+ * lector, pero un update que RLS filtra no da error (0 filas): sin esto, la IA creería que
+ * escribió. Y en adjuntar, el archivo ni siquiera se sube.
+ */
+export async function requireEditor(
+  db: Db,
+  project: { id: string; key: string },
+) {
+  const { data, error } = await db.rpc("puede_editar", { project: project.id });
+  if (error) throw dbError(error);
+  if (!data)
+    throw new ToolError(`Tu acceso a ${project.key} es de solo lectura.`);
+}
+
+/**
+ * "a" para pasar el turno: "yo", el nombre de una persona editora del proyecto, o
+ * "tercero:<nombre>" (ej. "tercero:platform team"). Un lector no puede tener el turno.
  */
 export async function resolveTurn(
   db: Db,
@@ -138,19 +153,25 @@ export async function resolveTurn(
   }
   const { data: members } = await db
     .from("project_members")
-    .select("user_id, profiles!inner(display_name)")
+    .select("user_id, acceso, profiles!inner(display_name)")
     .eq("project_id", projectId);
   const match = (members ?? []).find(
     (m) =>
       m.profiles.display_name.toLowerCase() === value.toLowerCase() ||
       m.user_id === value,
   );
+  const editors = (members ?? [])
+    .filter((m) => m.acceso === "editor")
+    .map((m) => m.profiles.display_name)
+    .join(", ");
   if (!match) {
-    const names = (members ?? [])
-      .map((m) => m.profiles.display_name)
-      .join(", ");
     throw new ToolError(
-      `"${value}" no es miembro del proyecto. Miembros: ${names}. Para un tercero usa "tercero:<nombre>".`,
+      `"${value}" no es miembro del proyecto. Editores: ${editors}. Para un tercero usa "tercero:<nombre>".`,
+    );
+  }
+  if (match.acceso !== "editor") {
+    throw new ToolError(
+      `${match.profiles.display_name} tiene acceso de solo lectura: no puede tener el turno. Editores: ${editors}.`,
     );
   }
   return {

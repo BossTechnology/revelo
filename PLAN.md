@@ -474,7 +474,7 @@ Si algún paso necesitó copiar y pegar entre ellos, el MVP no está listo.
 - [x] Clientes MCP revocables desde `/ajustes/conexiones`.
 - [x] Rate limit en `/api/mcp` y en el envío de enlaces mágicos.
 - [x] Secretos rotables documentados en `RUNBOOK.md`.
-- [x] Revisión de RLS con el advisor de seguridad de Supabase sin alertas. *Revisado el 8 de octubre de 2026: ninguna tabla sin RLS. Quedan 5 avisos aceptados: `create_project`, `is_member`, `task_project` y `mcp_hit` son `SECURITY DEFINER` ejecutables por `authenticated` a propósito (las políticas y el MCP las llaman como el usuario), y la protección de contraseñas filtradas no aplica porque solo se entra con Google.*
+- [x] Revisión de RLS con el advisor de seguridad de Supabase sin alertas. *Revisado el 8 de octubre de 2026: ninguna tabla sin RLS. Quedan 5 avisos aceptados: `create_project`, `is_member`, `task_project` y `mcp_hit` son `SECURITY DEFINER` ejecutables por `authenticated` a propósito (las políticas y el MCP las llaman como el usuario), y la protección de contraseñas filtradas no aplica porque solo se entra con Google. Desde la Fase 8, la lista revisada de funciones `SECURITY DEFINER` vive en el guard de `supabase/tests/lectores.test.sql` (suma `puede_editar` e `is_company_member`).*
 
 ---
 

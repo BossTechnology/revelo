@@ -8,6 +8,8 @@ import {
   CategoryList,
   ConnectRepo,
   GeneralForm,
+  LeaveProject,
+  MemberList,
   RepoRow,
 } from "@/components/relevo/project-settings";
 import { getViewer } from "@/lib/relevo/queries";
@@ -23,7 +25,7 @@ export async function generateMetadata({
 /**
  * Ajustes del proyecto (PLAN.md §8): miembros, repos conectados de cualquier organización
  * (instalando la GitHub App), nombre y color. GitHub vuelve aquí con ?installation_id= después
- * de instalar la app.
+ * de instalar la app. Un lector (Fase 8) solo ve los miembros y puede salirse.
  */
 export default async function ProjectSettingsPage({
   params,
@@ -36,7 +38,7 @@ export default async function ProjectSettingsPage({
   const { data: project } = await supabase
     .from("projects")
     .select(
-      "id, name, key, color, companies(name), project_members(user_id), project_repos(owner, repo, installation_id), categories(id, name, position, archived_at)",
+      "id, name, key, color, companies(name), project_members(user_id, acceso), project_repos(owner, repo, installation_id), categories(id, name, position, archived_at)",
     )
     .eq("key", key.toUpperCase())
     .maybeSingle();
@@ -44,7 +46,20 @@ export default async function ProjectSettingsPage({
 
   const ctx = { projectId: project.id, projectKey: project.key };
   const memberIds = new Set(project.project_members.map((m) => m.user_id));
+  const canEdit = project.project_members.some(
+    (m) => m.user_id === viewer.userId && m.acceso === "editor",
+  );
   const people = [...viewer.profiles.values()];
+  const members = project.project_members
+    .map((m) => ({ ...m, profile: viewer.profiles.get(m.user_id) }))
+    .filter((m) => m.profile !== undefined)
+    .map((m) => ({
+      id: m.user_id,
+      name: m.profile!.display_name,
+      color: m.profile!.turn_color,
+      acceso: m.acceso,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
   const appSlug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
   const installationId =
     typeof installation_id === "string"
@@ -66,110 +81,118 @@ export default async function ProjectSettingsPage({
         <p className="text-sm text-muted-foreground">
           Empresa: {project.companies.name}
         </p>
+        {!canEdit && (
+          <p className="text-sm text-muted-foreground">
+            Tu acceso a {project.key} es de solo lectura: ves el proyecto, pero
+            no cambias nada.
+          </p>
+        )}
       </header>
 
-      <section className="flex flex-col gap-3" aria-labelledby="general">
-        <h2 id="general" className="text-sm font-semibold">
-          General
-        </h2>
-        <GeneralForm ctx={ctx} name={project.name} color={project.color} />
-      </section>
+      {canEdit && (
+        <section className="flex flex-col gap-3" aria-labelledby="general">
+          <h2 id="general" className="text-sm font-semibold">
+            General
+          </h2>
+          <GeneralForm ctx={ctx} name={project.name} color={project.color} />
+        </section>
+      )}
 
-      <section className="flex flex-col gap-3" aria-labelledby="categorias">
-        <h2 id="categorias" className="text-sm font-semibold">
-          Categorías
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Dividen el proyecto en frentes (por ejemplo, las pestañas de un Doc).
-          Son opcionales; el tablero las usa como filtro. Una categoría
-          archivada deja de ofrecerse para tareas nuevas, pero sus tareas la
-          conservan.
-        </p>
-        <CategoryList
-          ctx={ctx}
-          categories={[...project.categories]
-            .sort(
-              (a, b) =>
-                Number(a.archived_at !== null) -
-                  Number(b.archived_at !== null) || a.position - b.position,
-            )
-            .map((c) => ({
-              id: c.id,
-              name: c.name,
-              archived: c.archived_at !== null,
-            }))}
-        />
-      </section>
+      {canEdit && (
+        <section className="flex flex-col gap-3" aria-labelledby="categorias">
+          <h2 id="categorias" className="text-sm font-semibold">
+            Categorías
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Dividen el proyecto en frentes (por ejemplo, las pestañas de un
+            Doc). Son opcionales; el tablero las usa como filtro. Una categoría
+            archivada deja de ofrecerse para tareas nuevas, pero sus tareas la
+            conservan.
+          </p>
+          <CategoryList
+            ctx={ctx}
+            categories={[...project.categories]
+              .sort(
+                (a, b) =>
+                  Number(a.archived_at !== null) -
+                    Number(b.archived_at !== null) || a.position - b.position,
+              )
+              .map((c) => ({
+                id: c.id,
+                name: c.name,
+                archived: c.archived_at !== null,
+              }))}
+          />
+        </section>
+      )}
 
       <section className="flex flex-col gap-3" aria-labelledby="miembros">
         <h2 id="miembros" className="text-sm font-semibold">
           Miembros
         </h2>
-        <ul className="flex flex-wrap gap-2">
-          {people
-            .filter((p) => memberIds.has(p.id))
-            .map((p) => (
-              <li
-                key={p.id}
-                className="flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm"
-              >
-                <span
-                  aria-hidden
-                  className="size-2 rounded-full"
-                  style={{ backgroundColor: p.turn_color }}
-                />
-                {p.display_name}
-              </li>
-            ))}
-        </ul>
-        <AddMember
+        <p className="text-sm text-muted-foreground">
+          Un editor escribe, gestiona los miembros y puede tener el turno. Un
+          lector solo ve el proyecto.
+        </p>
+        <MemberList
           ctx={ctx}
-          candidates={people
-            .filter((p) => !memberIds.has(p.id))
-            .map((p) => ({ id: p.id, name: p.display_name }))}
+          members={members}
+          me={viewer.userId}
+          canEdit={canEdit}
         />
+        {canEdit && (
+          <AddMember
+            ctx={ctx}
+            candidates={people
+              .filter((p) => !memberIds.has(p.id))
+              .map((p) => ({ id: p.id, name: p.display_name }))}
+          />
+        )}
+        <LeaveProject ctx={ctx} />
       </section>
 
-      <section className="flex flex-col gap-3" aria-labelledby="repos">
-        <h2 id="repos" className="text-sm font-semibold">
-          Repos de GitHub
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Los commits, PRs y CI se vinculan solos a la tarea por el ID en la
-          rama (ej.{" "}
-          <code className="font-mono">
-            {project.key.toLowerCase()}-14-descripcion
-          </code>
-          ), en el commit o en el PR. Solo cuentan los IDs con el prefijo{" "}
-          {project.key}.
-        </p>
-        {appSlug ? (
-          <a
-            href={`https://github.com/apps/${appSlug}/installations/new?state=${project.key}`}
-            className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-primary underline"
-          >
-            Instalar la GitHub App en una organización
-            <ExternalLink className="size-3.5" aria-hidden />
-          </a>
-        ) : (
+      {canEdit && (
+        <section className="flex flex-col gap-3" aria-labelledby="repos">
+          <h2 id="repos" className="text-sm font-semibold">
+            Repos de GitHub
+          </h2>
           <p className="text-sm text-muted-foreground">
-            La GitHub App todavía no está configurada en este entorno.
+            Los commits, PRs y CI se vinculan solos a la tarea por el ID en la
+            rama (ej.{" "}
+            <code className="font-mono">
+              {project.key.toLowerCase()}-14-descripcion
+            </code>
+            ), en el commit o en el PR. Solo cuentan los IDs con el prefijo{" "}
+            {project.key}.
           </p>
-        )}
-        {project.project_repos.length > 0 && (
-          <ul className="flex flex-col divide-y rounded-lg border bg-card">
-            {project.project_repos.map((r) => (
-              <RepoRow
-                key={`${r.owner}/${r.repo}`}
-                ctx={ctx}
-                owner={r.owner}
-                repo={r.repo}
-              />
-            ))}
-          </ul>
-        )}
-        <ConnectRepo ctx={ctx} installationId={installationId} />
-      </section>
+          {appSlug ? (
+            <a
+              href={`https://github.com/apps/${appSlug}/installations/new?state=${project.key}`}
+              className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-primary underline"
+            >
+              Instalar la GitHub App en una organización
+              <ExternalLink className="size-3.5" aria-hidden />
+            </a>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              La GitHub App todavía no está configurada en este entorno.
+            </p>
+          )}
+          {project.project_repos.length > 0 && (
+            <ul className="flex flex-col divide-y rounded-lg border bg-card">
+              {project.project_repos.map((r) => (
+                <RepoRow
+                  key={`${r.owner}/${r.repo}`}
+                  ctx={ctx}
+                  owner={r.owner}
+                  repo={r.repo}
+                />
+              ))}
+            </ul>
+          )}
+          <ConnectRepo ctx={ctx} installationId={installationId} />
+        </section>
+      )}
     </main>
   );
 }

@@ -67,8 +67,8 @@ export async function createTeam(): Promise<Team> {
     .single();
   if (error) throw error;
   const { error: mErr } = await admin.from("project_members").insert([
-    { project_id: project.id, user_id: idOf(a.name) },
-    { project_id: project.id, user_id: idOf(b.name) },
+    { project_id: project.id, user_id: idOf(a.name), acceso: "editor" },
+    { project_id: project.id, user_id: idOf(b.name), acceso: "editor" },
   ]);
   if (mErr) throw mErr;
 
@@ -79,6 +79,32 @@ export async function createTeam(): Promise<Team> {
     a: { id: idOf(a.name), ...a },
     b: { id: idOf(b.name), ...b },
   };
+}
+
+/**
+ * Suma al proyecto del equipo a una persona invitada con acceso de lector (Fase 8): alguien de
+ * afuera que solo ve.
+ */
+export async function addLector(team: Team) {
+  const admin = adminClient();
+  const lector = {
+    email: testEmail("lector"),
+    name: `Lector ${Math.random().toString(36).slice(2, 6)}`,
+  };
+  await createInvitedUser(lector.email, lector.name);
+  const { data: profile, error: pErr } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("display_name", lector.name)
+    .single();
+  if (pErr) throw pErr;
+  const { error } = await admin.from("project_members").insert({
+    project_id: team.projectId,
+    user_id: profile.id,
+    acceso: "lector",
+  });
+  if (error) throw error;
+  return { id: profile.id, ...lector };
 }
 
 /** Crea una tarea directamente (como el sistema), para preparar un escenario. */

@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(27);
 
 -- ---------------------------------------------------------------------------
 -- Datos
@@ -119,8 +119,25 @@ set local request.jwt.claims = '{"sub": "00000000-0000-0000-0000-0000000000a1", 
 select is(
   (select count(*) from public.profiles
    where id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2')),
+  1::bigint,
+  'sin proyecto en común, con sesión solo se ve el perfil propio (Fase 8)'
+);
+reset role;
+
+-- Con un proyecto en común (como lectoras: ver perfiles no exige editar).
+insert into public.projects (id, name, key, color, company_id) values
+  ('00000000-0000-0000-0000-0000000000b1', 'Login', 'LOG', '#000000', (select id from public.companies where name = 'Boss'));
+insert into public.project_members (project_id, user_id) values
+  ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-0000000000a1'),
+  ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-0000000000a2');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub": "00000000-0000-0000-0000-0000000000a1", "role": "authenticated"}';
+select is(
+  (select count(*) from public.profiles
+   where id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2')),
   2::bigint,
-  'con sesión se ven los perfiles'
+  'con un proyecto en común se ven los perfiles'
 );
 
 update public.profiles set display_name = 'Fede' where id = '00000000-0000-0000-0000-0000000000a1';

@@ -1,4 +1,4 @@
-import { BookMarked, Settings } from "lucide-react";
+import { BookMarked, Eye, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -45,8 +45,10 @@ export default async function BoardLayout({
 
   const { project, tasks } = board;
   const me = viewer.userId;
+  const canEdit = project.editorIds.includes(me);
   const categoryById = new Map(project.categories.map((c) => [c.id, c]));
-  const members = project.memberIds
+  // Solo los editores pueden tener el turno: el filtro y el diálogo solo los ofrecen a ellos.
+  const members = project.editorIds
     .map((id) => viewer.profiles.get(id))
     .filter((p) => p !== undefined)
     .map((p) => ({ id: p.id, name: p.display_name, color: p.turn_color }));
@@ -136,6 +138,15 @@ export default async function BoardLayout({
                 {r}
               </span>
             ))}
+            {!canEdit && (
+              <span
+                className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium"
+                title="Tu acceso a este proyecto es de solo lectura"
+              >
+                <Eye className="size-3" aria-hidden />
+                Solo lectura
+              </span>
+            )}
             {project.lastActivity && (
               <span className="text-xs text-muted-foreground">
                 Última actividad: {project.lastActivity}
@@ -152,15 +163,17 @@ export default async function BoardLayout({
           >
             <Settings className="size-4" aria-hidden />
           </Link>
-          <NewTaskDialog
-            projectId={project.id}
-            projectKey={project.key}
-            members={members.map(({ id, name }) => ({ id, name }))}
-            me={me}
-            categories={project.categories
-              .filter((c) => !c.archived_at)
-              .map(({ id, name }) => ({ id, name }))}
-          />
+          {canEdit && (
+            <NewTaskDialog
+              projectId={project.id}
+              projectKey={project.key}
+              members={members.map(({ id, name }) => ({ id, name }))}
+              me={me}
+              categories={project.categories
+                .filter((c) => !c.archived_at)
+                .map(({ id, name }) => ({ id, name }))}
+            />
+          )}
         </div>
       </header>
 
@@ -185,7 +198,12 @@ export default async function BoardLayout({
         />
       )}
 
-      <BoardColumns projectKey={project.key} cards={cards} me={me} />
+      <BoardColumns
+        projectKey={project.key}
+        cards={cards}
+        me={me}
+        canEdit={canEdit}
+      />
       {children}
     </main>
   );

@@ -1,6 +1,14 @@
 "use client";
 
-import { Archive, ArchiveRestore, BookMarked, Tag, Trash2 } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  BookMarked,
+  LogOut,
+  Tag,
+  Trash2,
+  UserMinus,
+} from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -9,12 +17,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   addProjectMember,
+  changeMemberAccess,
   connectRepo,
   createCategory,
   disconnectRepo,
+  leaveProject,
+  removeProjectMember,
   updateCategory,
   updateProjectSettings,
 } from "@/lib/relevo/actions";
+import { ACCESS_LABEL, type Access } from "@/lib/relevo/domain";
 
 type Ctx = { projectId: string; projectKey: string };
 type Result = { ok: true } | { ok: false; error: string };
@@ -90,6 +102,145 @@ export function GeneralForm({
   );
 }
 
+const ACCESSES = Object.keys(ACCESS_LABEL) as Access[];
+const SMALL_SELECT =
+  "h-8 rounded-md border border-input bg-transparent px-2 text-sm disabled:opacity-60 dark:bg-input/30";
+
+/**
+ * Miembros con su acceso (Fase 8). Un editor cambia el acceso y quita a otros; un lector solo
+ * ve la lista. Las reglas (último editor, turnos abiertos) las cuida la base y su mensaje llega
+ * tal cual.
+ */
+export function MemberList({
+  ctx,
+  members,
+  me,
+  canEdit,
+}: {
+  ctx: Ctx;
+  members: { id: string; name: string; color: string; acceso: Access }[];
+  me: string;
+  canEdit: boolean;
+}) {
+  return (
+    <ul
+      aria-label="Miembros del proyecto"
+      className="flex flex-col divide-y rounded-lg border bg-card"
+    >
+      {members.map((m) => (
+        <MemberRow key={m.id} ctx={ctx} member={m} me={me} canEdit={canEdit} />
+      ))}
+    </ul>
+  );
+}
+
+function MemberRow({
+  ctx,
+  member,
+  me,
+  canEdit,
+}: {
+  ctx: Ctx;
+  member: { id: string; name: string; color: string; acceso: Access };
+  me: string;
+  canEdit: boolean;
+}) {
+  const [pending, run] = useRun();
+  return (
+    <li
+      aria-label={member.name}
+      className="flex items-center gap-2 px-3 py-2 text-sm"
+    >
+      <span
+        aria-hidden
+        className="size-2 rounded-full"
+        style={{ backgroundColor: member.color }}
+      />
+      <span className="flex-1">
+        {member.name}
+        {member.id === me ? " (tú)" : ""}
+      </span>
+      {canEdit ? (
+        <select
+          aria-label={`Acceso de ${member.name}`}
+          className={SMALL_SELECT}
+          defaultValue={member.acceso}
+          key={member.acceso}
+          disabled={pending}
+          onChange={(e) =>
+            run(
+              () =>
+                changeMemberAccess({
+                  ...ctx,
+                  userId: member.id,
+                  acceso: e.target.value as Access,
+                }),
+              "Acceso actualizado",
+            )
+          }
+        >
+          {ACCESSES.map((a) => (
+            <option key={a} value={a}>
+              {ACCESS_LABEL[a]}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="text-muted-foreground">
+          {ACCESS_LABEL[member.acceso]}
+        </span>
+      )}
+      {canEdit && member.id !== me && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={`Quitar a ${member.name}`}
+          title="Quitar del proyecto"
+          disabled={pending}
+          onClick={() =>
+            run(
+              () => removeProjectMember({ ...ctx, userId: member.id }),
+              `${member.name} ya no es miembro`,
+            )
+          }
+        >
+          <UserMinus className="size-4" aria-hidden />
+        </Button>
+      )}
+    </li>
+  );
+}
+
+/** Cualquiera puede salirse; la base lo impide si es el último editor. */
+export function LeaveProject({ ctx }: { ctx: Ctx }) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="w-fit"
+      disabled={pending}
+      onClick={() => {
+        if (
+          !window.confirm(
+            `¿Salir de ${ctx.projectKey}? Dejarás de verlo hasta que un editor te vuelva a sumar.`,
+          )
+        )
+          return;
+        start(async () => {
+          // Si sale bien, la acción redirige a /.
+          const r = await leaveProject(ctx);
+          if (!r.ok) toast.error(r.error);
+        });
+      }}
+    >
+      <LogOut className="size-4" aria-hidden />
+      Salir del proyecto
+    </Button>
+  );
+}
+
 export function AddMember({
   ctx,
   candidates,
@@ -110,8 +261,16 @@ export function AddMember({
       className="flex gap-2"
       onSubmit={(e) => {
         e.preventDefault();
-        const userId = String(new FormData(e.currentTarget).get("user"));
-        run(() => addProjectMember({ ...ctx, userId }), "Miembro agregado");
+        const f = new FormData(e.currentTarget);
+        run(
+          () =>
+            addProjectMember({
+              ...ctx,
+              userId: String(f.get("user")),
+              acceso: String(f.get("acceso")) as Access,
+            }),
+          "Miembro agregado",
+        );
       }}
     >
       <label htmlFor="add-member" className="sr-only">
@@ -125,6 +284,21 @@ export function AddMember({
         {candidates.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="add-member-access" className="sr-only">
+        Acceso
+      </label>
+      <select
+        id="add-member-access"
+        name="acceso"
+        defaultValue="lector"
+        className="h-9 rounded-md border border-input bg-transparent px-3 text-sm dark:bg-input/30"
+      >
+        {ACCESSES.map((a) => (
+          <option key={a} value={a}>
+            {ACCESS_LABEL[a]}
           </option>
         ))}
       </select>

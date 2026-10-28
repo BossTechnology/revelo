@@ -140,13 +140,13 @@ isOneToOne: false
                   ]
                 },"project_members": {
                   Row: {
-                    "project_id": string,"user_id": string
+                    "acceso": Database["public"]['Enums']["member_access"],"project_id": string,"user_id": string
                   }
                   Insert: {
-                    "project_id": string,"user_id": string
+                    "acceso"?: Database["public"]['Enums']["member_access"],"project_id": string,"user_id": string
                   }
                   Update: {
-                    "project_id"?: string,"user_id"?: string
+                    "acceso"?: Database["public"]['Enums']["member_access"],"project_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -320,7 +320,7 @@ isOneToOne: false
           }
           Functions: {
             "create_project":
-{ Args: { "company_name": string,"member_ids"?: (string)[],"project_color": string,"project_key": string,"project_name": string }; Returns: {
+{ Args: { "company_name": string,"editor_ids"?: (string)[],"lector_ids"?: (string)[],"project_color": string,"project_key": string,"project_name": string }; Returns: {
               "archived_at": string | null,
 "color": string,
 "company_id": string,
@@ -351,6 +351,9 @@ isOneToOne: false
 "mcp_hit":
 { Args: { "max_calls"?: number }; Returns: boolean
                            },
+"puede_editar":
+{ Args: { "project": string }; Returns: boolean
+                           },
 "request_via":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -368,7 +371,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "reply_mark": "normal"|"oficial"|"firmada","task_status": "por_hacer"|"en_proceso"|"terminado","task_type": "handoff"|"pregunta"|"decision"|"externo","turn_kind": "persona"|"tercero"|"nadie"
+            "member_access": "editor"|"lector","reply_mark": "normal"|"oficial"|"firmada","task_status": "por_hacer"|"en_proceso"|"terminado","task_type": "handoff"|"pregunta"|"decision"|"externo","turn_kind": "persona"|"tercero"|"nadie"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -484,7 +487,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "reply_mark": ["normal", "oficial", "firmada"],"task_status": ["por_hacer", "en_proceso", "terminado"],"task_type": ["handoff", "pregunta", "decision", "externo"],"turn_kind": ["persona", "tercero", "nadie"]
+            "member_access": ["editor", "lector"],"reply_mark": ["normal", "oficial", "firmada"],"task_status": ["por_hacer", "en_proceso", "terminado"],"task_type": ["handoff", "pregunta", "decision", "externo"],"turn_kind": ["persona", "tercero", "nadie"]
           }
         }
 } as const
