@@ -3,9 +3,10 @@
 > Actualizar al cerrar cada sesión. Es lo primero que lee la siguiente.
 
 ## Tarea actual
-- Fase 8: miembros lectores (rama `fase-8-lectores`). Implementada y probada en local; PR abierto. Falta que Henry aplique la migración en producción e invite a una persona de afuera como lectora.
+- Fase 8: miembros lectores. En producción (PR #15, migración aplicada). Falta solo invitar a una persona de afuera como lectora y comprobarlo.
 
 ## Hecho
+- 2026-10-28: Fase 8 en producción, con autorización de Henry. Backup previo (`backup.yml`, artifact `relevo-backup` del run 40751500542, hasta 2027-01-26); `supabase db push` aplicó `20261028120000_miembros_lectores.sql` en `relevo-staging`; verificado: 14 miembros como editor, default `lector`, solo `profiles` fuera de `puede_editar()`, las 6 funciones `security definer` de la lista y ningún proyecto sin editor. PR #15 mergeado (`3e55d87`) y desplegado en Vercel.
 - 2026-10-28: Fase 8 implementada con TDD.
   - Migración `20261028120000_miembros_lectores.sql`: `project_members.acceso` (`member_access`, por defecto `lector`; los actuales quedan `editor`), `puede_editar()` en toda política de escritura (tareas, respuestas, adjuntos, Storage, categorías, repos, miembros, proyecto, empresa), políticas de update y delete en `project_members` con el trigger `guard_project_member` (último editor, turnos abiertos), trigger `guard_task_turn` (un lector no tiene el turno), `profiles` acotado y `create_project(…, editor_ids, lector_ids)` que exige ser editor.
   - Tests: `lectores.test.sql` (53) con los dos guards (políticas de escritura y funciones `security definer`), vistos fallar antes de la migración y otra vez con una política y una función de prueba. Ajustados `datos`, `empresas`, `github`, `trabajo` y `login` (perfiles solo con proyecto en común) y el seed (Henry y Federico editores).
@@ -35,7 +36,7 @@
 - Nada.
 
 ## Siguiente paso
-- Henry: revisar y mergear el PR de la Fase 8, aplicar `20261028120000_miembros_lectores.sql` en producción y probar con una persona de afuera como lectora (último punto del "Hecho cuando").
+- Henry: invitar a una persona de afuera como lectora a un solo proyecto y comprobar que ve "Solo lectura" y no puede cambiar nada (último punto del "Hecho cuando" de la Fase 8; pasos en `RUNBOOK.md`, "Invitar a alguien").
 - Atender las tareas en turno de Henry en Relevo (BOB-4, BOB-5, BOB-7, BZZ-3, TBT-4 a TBT-7).
 
 ## Notas de sesión
