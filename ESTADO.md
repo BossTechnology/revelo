@@ -6,6 +6,7 @@
 - Fase 8: miembros lectores. En producción (PR #15, migración aplicada). Falta solo invitar a una persona de afuera como lectora y comprobarlo.
 
 ## Hecho
+- 2026-11-12/13 (sesión arnés, sin cambios en el código de Relevo): respuestas publicadas en Relevo por pedido de Henry, con su turno pasado a Federico: BOB-6, BOB-14, BOB-17, BOB-8, BOB-15, BZZ-3 y BZZ-8 (BZZ-8: el borrador de SigNoz pasó a D54 y el ensayo de community en lab-02 sigue abierto). En Bzzz se fusionaron #297, #298, #299, #300, #301, #302 y #303, y se archivaron las sesiones que cumplieron su objetivo. Ver «Arnés» abajo.
 - 2026-10-28: Fase 8 en producción, con autorización de Henry. Backup previo (`backup.yml`, artifact `relevo-backup` del run 40751500542, hasta 2027-01-26); `supabase db push` aplicó `20261028120000_miembros_lectores.sql` en `relevo-staging`; verificado: 14 miembros como editor, default `lector`, solo `profiles` fuera de `puede_editar()`, las 6 funciones `security definer` de la lista y ningún proyecto sin editor. PR #15 mergeado (`3e55d87`) y desplegado en Vercel.
 - 2026-10-28: Fase 8 implementada con TDD.
   - Migración `20261028120000_miembros_lectores.sql`: `project_members.acceso` (`member_access`, por defecto `lector`; los actuales quedan `editor`), `puede_editar()` en toda política de escritura (tareas, respuestas, adjuntos, Storage, categorías, repos, miembros, proyecto, empresa), políticas de update y delete en `project_members` con el trigger `guard_project_member` (último editor, turnos abiertos), trigger `guard_task_turn` (un lector no tiene el turno), `profiles` acotado y `create_project(…, editor_ids, lector_ids)` que exige ser editor.
@@ -37,11 +38,20 @@
 
 ## Siguiente paso
 - Henry: invitar a una persona de afuera como lectora a un solo proyecto y comprobar que ve "Solo lectura" y no puede cambiar nada (último punto del "Hecho cuando" de la Fase 8; pasos en `RUNBOOK.md`, "Invitar a alguien").
-- Atender las tareas en turno de Henry en Relevo (BOB-4, BOB-5, BOB-7, BZZ-3, TBT-4 a TBT-7).
+- Atender las tareas en turno de Henry en Relevo: hoy BOB-7 (Handoff) y BOB-11 (Decisión), según `mi_turno` del 2026-11-13.
+
+## Arnés (Bzzz y Relevo)
+Alcance fijado por Henry: el arnés solo mira Bzzz y Relevo; cada otro proyecto tiene el suyo. Lo de Bzzz vive en su propio `ESTADO.md`; esto es solo el índice de lo que espera a alguien.
+- **Henry, en la sesión «Construir la doble sal de D53»:** autorizar (a) anotar la evidencia del ensayo de community y volver lab-02 a la imagen enterprise. lab-02 corre `signoz-community:v0.147.0` sobre un SQLite vacío desde el 2026-11-11 (visto con `docker ps` el 2026-11-13), probablemente sin reglas de alerta. (b) Desplegar `main` en lab-02 y hacer el ensayo A → B → C de la doble sal (D53 9.4). La sesión ya tiene el contexto, pero no la autorización.
+- **Henry, firmas en Bzzz:** D54 de SigNoz (#280; falta además quién envía el correo a SigNoz y desde qué dirección) y los insumos de BOB-14 y BOB-17 (#296; la decisión nueva sería D55).
+- **Henry, en las cajas:** autorizar el borrado de las imágenes `-antes-20261111` (sesión del plan de ventana); llave Admin temporal en Zerrano y en Febor para el rol Viewer de `bzzz-latido` (D43, #287); entregar la clave de `ycloud-atencion` y hacer una conversación de prueba (sesión Whatssap).
+- **Terceros:** David (nueva prueba de OTLP de feborback tras la regla de GCP del 2026-11-12, Febor Virtual y el módulo de Ventas de Zerrano); Febor (las dos preguntas de Digiturno).
+- **Checkout de Bzzz:** sigue en `puerta-cola-de-conexiones`, sin cambios rastreados. Quedan sin rastrear, a propósito, los `HANDOFF*`, `notas-david-grossRevenue.md` y `docs/comercial/{camaras_4500,febor,fondos,pinch,wog}`.
 
 ## Notas de sesión
 - 2026-10-12: diseño alineado con Henry (Empresa → Proyecto → Categoría, Henry y Federico en todo, importar TBT con historial). Implementado y probado en local.
 - 2026-10-12: Fase 7 en producción; importación de TBT preparada y probada en local.
 - 2026-10-23: revisión de pendientes; ESTADO al día.
 - 2026-10-28: Fase 8 implementada. Decisión de UI tomada sin preguntar: en el diálogo de nuevo proyecto nadie viene marcado por defecto (antes venían todos), para no sumar por accidente a una persona de afuera a cada proyecto nuevo.
+- 2026-11-12/13 (arnés): el corte del centro de Bzzz fue un impago a Hetzner, no fail2ban ni un ataque; Henry pagó y la IP nueva quedó en firewall-1. Lección: en el checkout de Bzzz, scripts dentro de `bash -euo pipefail` y worktrees en el scratchpad, porque un `cd` fallido en zsh hizo correr comandos en el checkout principal (se deshizo sin subir nada).
 - 2026-10-28: grill del miembro lector. Inventario de escrituras: `companies` se renombra con `is_company_member`, `create_project` es security definer y deja crear proyectos a cualquier miembro, `project_members` no tiene update ni delete, y no hay guard que descubra políticas de escritura.
