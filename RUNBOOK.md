@@ -89,7 +89,11 @@ Después de rotar en Vercel hay que redesplegar (`vercel redeploy <url> --scope 
 ## Monitoreo
 
 - Logs: Vercel → proyecto `relevo` → Logs, filtrando por `/api/mcp` y `/api/github/webhook`.
-- Alertas: Vercel → Observability → Alerts → regla "5xx > 3 en 5 minutos" para esas dos rutas, con aviso por correo a Henry.
+- Alertas: monitor de Vercel «relevo: 5xx en MCP o webhook de GitHub», definido en `ops/vercel/monitor-5xx-api.json`: más de 3 respuestas 5xx en 5 minutos en `/api/mcp` o `/api/github/webhook`, solo producción, severidad alta, aviso a los dueños del equipo (correo, app y push según las preferencias de notificación de cada uno). Lo crea Henry:
+  ```bash
+  vercel monitors add --scope bosstechnology --body ops/vercel/monitor-5xx-api.json
+  ```
+  Para comprobar que existe: `vercel monitors ls --project relevo --scope bosstechnology`. Para cambiarlo: editar el JSON y `vercel monitors update <id> --scope bosstechnology --body ops/vercel/monitor-5xx-api.json`. El filtro usa `route` (la ruta del handler), no `requestPath`, porque con `requestPath` y comodín no coincide nada.
 - El webhook deja en los logs cada respuesta 4xx/5xx con el prefijo `[github-webhook]`.
 
 ## Conectar un repo de GitHub a un proyecto

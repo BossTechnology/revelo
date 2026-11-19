@@ -3,6 +3,7 @@
 Una línea por cambio entregado, en lenguaje de usuario.
 
 ## Sin publicar
+- Aviso cuando el MCP o el webhook de GitHub devuelven más de 3 errores 5xx en 5 minutos (monitor de Vercel en `ops/vercel/`).
 - Miembros lectores: cada miembro de un proyecto es Editor o Lector. Un lector ve todo su proyecto (también por el MCP) y descarga adjuntos, pero no cambia nada ni puede tener el turno; el proyecto muestra "Solo lectura".
 - En los ajustes del proyecto se ve el acceso de cada miembro; un editor lo cambia, suma personas como Editor o Lector y quita miembros. Cualquiera puede salirse del proyecto.
 - Al crear un proyecto se elige Editor o Lector para cada persona que se suma (por defecto, nadie se suma y el acceso es Lector).
