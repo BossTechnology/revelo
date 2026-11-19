@@ -1,0 +1,23 @@
+{
+  "type": "custom",
+  "name": "relevo: 5xx en MCP o webhook de GitHub",
+  "severity": "high",
+  "ruleScope": { "type": "project", "projectId": "prj_F8BDCgF78wjvElN3EFSPO3DM7Pgu" },
+  "evaluation": {
+    "window": "5m",
+    "query": {
+      "filter": "environment = \"production\" AND (route = \"/api/mcp\" OR route = \"/api/github/webhook\")",
+      "metrics": {
+        "errores": {
+          "metric": "vercel.request.count",
+          "aggregation": "count",
+          "filter": "httpStatus >= 500"
+        }
+      },
+      "outputs": ["errores"]
+    }
+  },
+  "trigger": { "type": "threshold", "output": "errores", "operator": "gt", "threshold": 3 },
+  "tags": ["relevo", "5xx"],
+  "notificationSettings": { "enableTeamOwnerNotifications": true }
+}
